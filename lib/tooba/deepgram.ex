@@ -15,6 +15,9 @@ defmodule Tooba.Deepgram do
 
     defp permitted_fields do
       [
+        :encoding,
+        :sample_rate,
+        :channels,
         :model,
         :tier,
         :version,
