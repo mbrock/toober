@@ -1,12 +1,6 @@
 # Let's use Membrane with PortAudio to record audio from the microphone
 # and send it to Deepgram for transcription.
 
-defmodule Tooba.TranscriptionSink do
-  use Membrane.Sink
-
-  def_input_pad(:input, flow_control: :auto, accepted_format: %Membrane.Matroska{})
-end
-
 defmodule Tooba.Record do
   use Membrane.Pipeline
 
