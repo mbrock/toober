@@ -15,9 +15,19 @@ defmodule Tooba.RDF.Store do
 
   @impl true
   def init(_args) do
-    case load_from_file() do
-      {:ok, graph} -> {:ok, graph}
-      {:error, _reason} -> {:ok, RDF.Graph.new()}
+    graph = load_from_file()
+    log_graph = load_log_file()
+
+    case {graph, log_graph} do
+      {{:ok, graph}, {:ok, log_graph}} ->
+        merged_graph = RDF.Graph.merge(graph, log_graph)
+        {:ok, merged_graph}
+
+      {{:ok, graph}, {:error, _}} ->
+        {:ok, graph}
+
+      {{:error, _} = error, _} ->
+        error
     end
   end
 
