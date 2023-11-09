@@ -2,6 +2,7 @@ defmodule Tooba.RDF.Store do
   @moduledoc """
   A persistent RDF graph store.
   """
+  require RDF.Graph
 
   use GenServer
 
@@ -21,9 +22,9 @@ defmodule Tooba.RDF.Store do
   end
 
   @impl true
-  def handle_call({:know, triples}, _from, graph) do
-    append_to_log(triples)
-    new_graph = RDF.Graph.new(triples, graph)
+  def handle_call({:know, data}, _from, graph) do
+    append_to_log(data)
+    new_graph = RDF.Graph.add(data, graph)
     {:reply, :ok, new_graph}
   end
 
@@ -32,8 +33,8 @@ defmodule Tooba.RDF.Store do
     {:reply, graph, graph}
   end
 
-  def know!(triples) do
-    GenServer.call(__MODULE__, {:know, triples})
+  def know!(data) do
+    GenServer.call(__MODULE__, {:know, data})
   end
 
   # Returns the current state of the graph.
@@ -43,8 +44,9 @@ defmodule Tooba.RDF.Store do
 
   defp append_to_log(data) do
     log_path = rdf_store_file_path(@log_file_name)
+    ensure_data_dir_exists()
 
-    File.open(log_path, [:append], fn {:ok, file} ->
+    File.open(log_path, [:append], fn file ->
       serialized = RDF.NTriples.write_string!(data)
       :ok = IO.binwrite(file, serialized <> "\n")
     end)
@@ -53,7 +55,20 @@ defmodule Tooba.RDF.Store do
   end
 
   def persist() do
-    consolidate_log()
+    graph = retrieve_graph()
+
+    graph_path = rdf_store_file_path(@graph_file_name)
+    log_path = rdf_store_file_path(@log_file_name)
+
+    ensure_data_dir_exists()
+
+    with :ok <- RDF.Serialization.write_file(graph_path, graph) do
+      case File.rm(log_path) do
+        :ok -> :ok
+        {:error, :enoent} -> :ok
+        {:error, reason} -> {:error, reason}
+      end
+    end
   end
 
   def load_from_file(name) do
@@ -66,25 +81,10 @@ defmodule Tooba.RDF.Store do
     end
   end
 
-  # Combines the persistent storage and the log file, effectively consolidating the store.
-  def consolidate_log do
-    :ok = ensure_data_dir_exists()
-    log_path = rdf_store_file_path(@log_file_name)
-
-    with {:ok, log_contents} <- read_from_file(log_path),
-         {:ok, graph} <- RDF.NTriples.read_string(log_contents),
-         {:ok, serialized} <- RDF.Turtle.write_string(graph),
-         :ok <- write_to_file(rdf_store_file_path(@graph_file_name), serialized) do
-      File.write(log_path, "")
-    else
-      error -> error
-    end
-  end
-
   # Helper function to ensure the storage directory exists.
   defp ensure_data_dir_exists do
     data_home = get_xdg_data_home()
-    File.mkdir_p(data_home)
+    :ok = File.mkdir_p(data_home)
   end
 
   # Helper function to generate file paths.
@@ -93,21 +93,19 @@ defmodule Tooba.RDF.Store do
   end
 
   # Returns the XDG data home path.
-  defp get_xdg_data_home do
+  def get_xdg_data_home do
     :filename.basedir(:user_data, Application.get_application(__MODULE__) |> Atom.to_string())
   end
 
-  # Helper functions for file operations.
-  defp read_from_file(file_path), do: File.read(file_path)
-  defp write_to_file(file_path, contents), do: File.write(file_path, contents)
+  require RDF.Graph
+  use RDF
 
   # Demo function to add a few cool RDF triples to the store.
   def demo do
-    triples = [
-      {"http://example.org/coolthing", "http://www.w3.org/2000/01/rdf-schema#label", "The Cool Thing"},
-      {"http://example.org/coolthing", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://example.org/CoolConcept"},
-      {"http://example.org/coolthing", "http://example.org/property/hasCoolnessFactor", "10"}
-    ]
-    know!(triples)
+    RDF.Graph.build do
+      ~I<https://node.town/riga>
+      |> a(~I<https://schema.org/City>)
+    end
+    |> know!()
   end
 end
