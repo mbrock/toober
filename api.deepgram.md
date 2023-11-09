@@ -1,189 +1,152 @@
-model
-string
+# Deepgram WebSocket Listen API Endpoint Specification
 
-AI model used to process submitted audio. Learn More
+## Parameters
 
-general
-meeting
-phonecall
-voicemail
-finance
-conversationalai
-video
-<custom_id>
-tier
-string
+### `model`
 
-Level of model you would like to use in your request. Learn More
+**Type**: string  
+**Description**: AI model used to process submitted audio.  
+**Options**:
 
-enhanced
-base
-version
-string
+- general
+- meeting
+- phonecall
+- voicemail
+- finance
+- conversationalai
+- video
+- \<custom_id\>
 
-Version of the model to use.Learn More
+### `tier`
 
-latest
-<version_id>
-language
-string
+**Type**: string  
+**Description**: Level of model you would like to use in your request.  
+**Options**:
 
-The BCP-47 language tag that hints at the primary spoken language. Learn More
+- enhanced
+- base
 
-da
-de
-en
-en-AU
-en-GB
-en-IN
-en-NZ
-en-US
-es
-es-419
-fr
-fr-CA
-hi
-hi-Latn
-id
-it
-ja
-ko
-nl
-no
-pl
-pt
-pt-BR
-pt-PT
-ru
-sv
-ta
-tr
-uk
-zh-CN
-zh-TW
-punctuate
-boolean
+### `version`
 
-Indicates whether to add punctuation and capitalization to the transcript Learn More
+**Type**: string  
+**Description**: Version of the model to use.  
+**Options**:
 
-true
-false
-profanity_filter
-boolean
+- latest
+- \<version_id\>
 
-Indicates whether to remove profanity from the transcript. Learn More
+### `language`
 
-true
-false
-redact
-string
+**Type**: string  
+**Description**: The BCP-47 language tag for the primary spoken language.  
+**Options**: da, de, en, en-AU, en-GB, en-IN, en-NZ, en-US, es, es-419, fr, fr-CA, hi, hi-Latn, id, it, ja, ko, nl, no, pl, pt, pt-BR, pt-PT, ru, sv, ta, tr, uk, zh-CN, zh-TW
 
-Indicates whether to redact sensitive information, replacing redacted content with asterisks (*). Can send multiple instances in query string (for example, redact=pci&redact=numbers). Learn More
+### `punctuate`
 
-pci
-numbers
-true
-ssn
-diarize
-boolean
+**Type**: boolean  
+**Description**: Indicates whether to add punctuation and capitalization to the transcript.  
+**Options**: true, false
 
-Indicates whether to recognize speaker changes. When set to true, each word in the transcript will be assigned a speaker number starting at 0. Learn More
+### `profanity_filter`
 
-true
-false
-diarize_version
-string
+**Type**: boolean  
+**Description**: Indicates whether to remove profanity from the transcript.  
+**Options**: true, false
 
-Indicates the version of the diarization feature to use. Only used when the diarization feature is enabled (diarize=true is passed to the API). Learn More
+### `redact`
 
-smart_format
-boolean
+**Type**: string  
+**Description**: Indicates whether to redact sensitive information.  
+**Options**: pci, numbers, true, ssn
 
-Indicates whether to apply formatting to transcript output. When set to true, additional formatting will be applied to transcripts to improve readability. Learn More
+### `diarize`
 
-true
-false
-filler_words
-boolean
+**Type**: boolean  
+**Description**: Indicates whether to recognize speaker changes.  
+**Options**: true, false
 
-Indicates whether to include filler words like "uh" and "um" in transcript output. When set to true, these words will be included. Defaults to false. Learn More
+### `diarize_version`
 
-true
-false
-multichannel
-boolean
+**Type**: string  
+**Description**: Version of the diarization feature. Only used when diarization is enabled.
 
-Indicates whether to transcribe each audio channel independently. Learn More
+### `smart_format`
 
-true
-false
-alternatives
-int32
+**Type**: boolean  
+**Description**: Indicates whether to apply formatting to transcript output.  
+**Options**: true, false
 
-Maximum number of transcript alternatives to return.
+### `filler_words`
 
-numerals
-boolean
+**Type**: boolean  
+**Description**: Indicates whether to include filler words in transcript output.  
+**Options**: true, false
 
-Indicates whether to convert numbers from written format (e.g., one) to numerical format (e.g., 1). Learn More
+### `multichannel`
 
-true
-false
-search
-string
+**Type**: boolean  
+**Description**: Indicates whether to transcribe each audio channel independently.  
+**Options**: true, false
 
-Terms or phrases to search for in the submitted audio. Can send multiple instances in query string (for example, search=speech&search=Friday). Learn More
+### `alternatives`
 
-replace
-string
+**Type**: int32  
+**Description**: Maximum number of transcript alternatives to return.
 
-Terms or phrases to search for in the submitted audio and replace. Can send multiple instances in query string (for example, replace=this:that&replace=thisalso:thatalso). Learn More
+### `numerals`
 
-callback
-string
+**Type**: boolean  
+**Description**: Indicates whether to convert numbers from written to numerical format.  
+**Options**: true, false
 
-Callback URL to provide if you would like your submitted audio to be processed asynchronously. Learn More
+### `search`
 
-keywords
-string
+**Type**: string  
+**Description**: Terms or phrases to search for in the submitted audio.
 
-Uncommon proper nouns or other words to transcribe that are not a part of the model's vocabulary. Can send multiple instances in query string (for example, keywords=snuffalupagus:10&keywords=systrom:5.5). Learn More
+### `replace`
 
-interim_results
-string
+**Type**: string  
+**Description**: Terms or phrases to search and replace in the submitted audio.
 
-Indicates whether the streaming endpoint should send you updates to its transcription as more audio becomes available. When set to true, the streaming endpoint returns regular updates, which means transcription results will likely change for a period of time. By default, this flag is set to false. Learn More
+### `callback`
 
-true
-false
-endpointing
-string
+**Type**: string  
+**Description**: Callback URL for asynchronous audio processing.
 
-Indicates how long Deepgram will wait to detect whether a speaker has finished speaking (or paused for a significant period of time, indicating the completion of an idea). When Deepgram detects an endpoint, it assumes that no additional data will improve its prediction, so it immediately finalizes the result for the processed time range and returns the transcript with a speech_final parameter set to true. Endpointing may be disabled by setting endpointing=false. Learn More
+### `keywords`
 
-encoding
-string
+**Type**: string  
+**Description**: Uncommon words to transcribe that are not part of the model's vocabulary.
 
-Expected encoding of the submitted streaming audio. If this parameter is set, sample_rate must also be specified. Learn More
+### `interim_results`
 
-linear16
-flac
-mulaw
-amr-nb
-amr-wb
-opus
-speex
-channels
-int32
+**Type**: string  
+**Description**: Indicates whether to send updates to transcription as more audio becomes available.  
+**Options**: true, false
 
-Number of independent audio channels contained in submitted streaming audio. Only read when a value is provided for encoding. Learn More
+### `endpointing`
 
-sample_rate
-int32
+**Type**: string  
+**Description**: Indicates how long to wait to detect if a speaker has finished speaking.
 
-Sample rate of submitted streaming audio. Required (and only read) when a value is provided for encoding. Learn More
+### `encoding`
 
-tag
-string
+**Type**: string  
+**Description**: Expected encoding of the submitted streaming audio.  
+**Options**: linear16, flac, mulaw, amr-nb, amr-wb, opus, speex
 
-Tag to associate with the request. Learn More
+### `channels`
+
+**Type**: int32  
+**Description**: Number of independent audio channels in submitted audio.
+
+### `sample_rate`
+
+**Type**: int32  
+**Description**: Sample rate of submitted streaming audio.
+
+### `tag`
+
+**Type**: string  
+**Description**: Tag to associate with the request.

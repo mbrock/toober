@@ -1,7 +1,12 @@
 import Config
 
-# Add the following line inside the `if config_env() == :prod do` block
-config :tooba, deepgram_api_key: System.get_env("DEEPGRAM_API_KEY") || raise "DEEPGRAM_API_KEY environment variable not set"
+config :tooba,
+  deepgram_api_key:
+    System.get_env("DEEPGRAM_API_KEY") || raise("DEEPGRAM_API_KEY environment variable not set")
+
+config :tooba,
+  zigbee_enabled: System.get_env("TOOBA_ZIGBEE") == "yes"
+
 # The block below contains prod specific runtime configuration.
 
 # ## Using releases

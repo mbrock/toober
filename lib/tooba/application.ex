@@ -7,25 +7,25 @@ defmodule Tooba.Application do
 
   @impl true
   def start(_type, _args) do
-    zigbee_enabled = Application.get_env(:tooba, :zigbee_enabled, true)
-
-    children = [
-      ToobaWeb.Telemetry,
-      Tooba.Repo,
-      {DNSCluster, query: Application.get_env(:tooba, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: Tooba.PubSub},
-      {Finch, name: Tooba.Finch},
-      ToobaWeb.Endpoint
-    ] ++ for zigbee_enabled <- [Application.get_env(:tooba, :zigbee_enabled, true)],
-          zigbee_enabled do
-      {
-        Tortoise.Connection,
-        client_id: Tooba.Zigbee,
-        handler: {Tooba.Zigbee, []},
-        server: {Tortoise.Transport.Tcp, host: "localhost", port: 1883},
-        subscriptions: [{"#", 0}]
-      }
-    end
+    children =
+      [
+        ToobaWeb.Telemetry,
+        Tooba.Repo,
+        {DNSCluster, query: Application.get_env(:tooba, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: Tooba.PubSub},
+        {Finch, name: Tooba.Finch},
+        ToobaWeb.Endpoint
+      ] ++
+        for zigbee_enabled <- [Application.get_env(:tooba, :zigbee_enabled, true)],
+            zigbee_enabled do
+          {
+            Tortoise.Connection,
+            client_id: Tooba.Zigbee,
+            handler: {Tooba.Zigbee, []},
+            server: {Tortoise.Transport.Tcp, host: "localhost", port: 1883},
+            subscriptions: [{"#", 0}]
+          }
+        end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

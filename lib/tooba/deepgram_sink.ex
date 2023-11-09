@@ -20,10 +20,7 @@ defmodule Tooba.DeepgramSink do
   alias Tooba.Deepgram
 
   @impl true
-  def handle_init(_ctx, %{deepgram_opts: deepgram_opts} = opts) do
-    # Ensure the channels option is set correctly
-    deepgram_opts = Map.put_new(deepgram_opts, :channels, opts[:input].caps.channels)
-
+  def handle_init(_ctx, %{deepgram_opts: deepgram_opts}) do
     # Start the WebSocket client and keep the pid to send messages later
     {:ok, ws_pid} = Deepgram.start_link(deepgram_opts)
     {[], %{ws_pid: ws_pid}}

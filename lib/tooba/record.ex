@@ -6,9 +6,14 @@ defmodule Tooba.Record do
 
   @impl true
   def handle_init(_ctx, opts) do
-    deepgram_opts = opts[:deepgram_opts] || %{}
-    sample_rate = Map.get(deepgram_opts, :sample_rate, 48_000)
-    channels = Map.get(deepgram_opts, :channels, 1)
+    sample_rate = 48_000
+    channels = 1
+
+    deepgram_opts =
+      Map.merge(
+        opts,
+        %{sample_rate: sample_rate, channels: channels, encoding: "linear16"}
+      )
 
     spec =
       child(%Membrane.PortAudio.Source{
@@ -27,8 +32,8 @@ defmodule Tooba.Record do
     # Start the pipeline
     {:ok, _supervisor_pid, pid} = Tooba.Record.start_link(%{})
 
-    # Wait for 5 seconds
-    :timer.sleep(5_000)
+    # Wait for 10 seconds
+    :timer.sleep(10_000)
 
     # Stop the pipeline
     :ok = Membrane.Pipeline.terminate(pid)
