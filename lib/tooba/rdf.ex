@@ -22,8 +22,9 @@ defmodule Tooba.RDF.Store do
   end
 
   @impl true
-  def handle_call(:retrieve, _from, graph) do
-    {:reply, graph, graph}
+  def handle_call({:know, triples}, _from, graph) do
+    new_graph = RDF.Graph.new(triples, graph)
+    {:reply, :ok, new_graph}
   end
 
   @impl true
@@ -31,8 +32,8 @@ defmodule Tooba.RDF.Store do
     {:noreply, new_graph}
   end
 
-  def retrieve_graph do
-    GenServer.call(__MODULE__, :retrieve)
+  def know!(triples) when is_list(triples) do
+    GenServer.call(__MODULE__, {:know, triples})
   end
 
   def store_graph(graph) do
