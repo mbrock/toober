@@ -17,9 +17,17 @@ defmodule Tooba.DeepgramSink do
   end
 
   @impl true
-  def handle_info({:data, data}, _ctx, %{ws_pid: ws_pid} = state) do
-    # Send the audio data to the WebSocket client
-    WebSockex.send_frame(ws_pid, {:binary, data})
+  def handle_info({:websocket, {:text, json}}, _ctx, state) do
+    # Log the JSON message from Deepgram
+    IO.inspect(json, label: "Received JSON from Deepgram")
+    {[], state}
+  end
+
+  @impl true
+  def handle_process(:input, buffer, _ctx, %{ws_pid: ws_pid} = state) do
+    # Assuming buffer contains the audio data
+    # Send the audio data to the WebSocket client as a binary frame
+    WebSockex.send_frame(ws_pid, {:binary, buffer.payload})
     {[], state}
   end
 end
