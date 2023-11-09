@@ -3,10 +3,8 @@ defmodule Tooba.DeepgramSink do
 
   def_input_pad(:input,
     demand_unit: :buffers,
-    accepted_format: :any,
-    availability: :on_request,
-    options: [],
-    flow_control: :pull
+    demand_mode: :auto,
+    accepted_format: Membrane.Opus
   )
 
   def_options(
