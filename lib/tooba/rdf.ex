@@ -63,11 +63,7 @@ defmodule Tooba.RDF.Store do
   end
 
   def persist() do
-    :ok = ensure_data_dir_exists()
-
-    graph = retrieve_graph()
-    serialized = RDF.Turtle.write_string!(graph)
-    write_to_file(rdf_store_file_path(@graph_file_name), serialized)
+    consolidate_log()
   end
 
   # Attempts to load the graph from the storage file.
