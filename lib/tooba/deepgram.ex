@@ -6,6 +6,28 @@ defmodule Tooba.Deepgram do
   defmodule RequestParams do
     use Ecto.Schema
 
+    @doc false
+    def changeset(params, attrs) do
+      params
+      |> Ecto.Changeset.cast(attrs, permitted_fields())
+      |> Ecto.Changeset.validate_required(required_fields())
+    end
+
+    defp permitted_fields do
+      [
+        :model, :tier, :version, :language, :detect_language, :punctuate,
+        :profanity_filter, :redact, :diarize, :diarize_version, :smart_format,
+        :filler_words, :multichannel, :alternatives, :search, :replace,
+        :callback, :keywords, :paragraphs, :summarize, :detect_topics,
+        :utterances, :utt_split, :tag, :numerals, :ner, :measurements,
+        :dictation
+      ]
+    end
+
+    defp required_fields do
+      []
+    end
+
     embedded_schema do
       field :model, :string, default: "general"
       field :tier, :string, default: "base"
