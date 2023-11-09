@@ -7,6 +7,8 @@ defmodule Tooba.Application do
 
   @impl true
   def start(_type, _args) do
+    zigbee_enabled = Application.get_env(:tooba, :zigbee_enabled, true)
+
     children = [
       ToobaWeb.Telemetry,
       Tooba.Repo,
@@ -14,20 +16,22 @@ defmodule Tooba.Application do
       {Phoenix.PubSub, name: Tooba.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Tooba.Finch},
-      # Start a worker by calling: Tooba.Worker.start_link(arg)
-      # {Tooba.Worker, arg},
       # Start to serve requests, typically the last entry
-      ToobaWeb.Endpoint,
-
-      # Tortoise MQTT client
-      {
-        Tortoise.Connection,
-        client_id: Tooba.Zigbee,
-        handler: {Tooba.Zigbee, []},
-        server: {Tortoise.Transport.Tcp, host: "localhost", port: 1883},
-        subscriptions: [{"#", 0}]
-      }
+      ToobaWeb.Endpoint
     ]
+
+    if zigbee_enabled do
+      children = children ++ [
+        # Tortoise MQTT client
+        {
+          Tortoise.Connection,
+          client_id: Tooba.Zigbee,
+          handler: {Tooba.Zigbee, []},
+          server: {Tortoise.Transport.Tcp, host: "localhost", port: 1883},
+          subscriptions: [{"#", 0}]
+        }
+      ]
+    end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
