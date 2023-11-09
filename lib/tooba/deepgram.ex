@@ -15,11 +15,33 @@ defmodule Tooba.Deepgram do
 
     defp permitted_fields do
       [
-        :model, :tier, :version, :language, :detect_language, :punctuate,
-        :profanity_filter, :redact, :diarize, :diarize_version, :smart_format,
-        :filler_words, :multichannel, :alternatives, :search, :replace,
-        :callback, :keywords, :paragraphs, :summarize, :detect_topics,
-        :utterances, :utt_split, :tag, :numerals, :ner, :measurements,
+        :model,
+        :tier,
+        :version,
+        :language,
+        :detect_language,
+        :punctuate,
+        :profanity_filter,
+        :redact,
+        :diarize,
+        :diarize_version,
+        :smart_format,
+        :filler_words,
+        :multichannel,
+        :alternatives,
+        :search,
+        :replace,
+        :callback,
+        :keywords,
+        :paragraphs,
+        :summarize,
+        :detect_topics,
+        :utterances,
+        :utt_split,
+        :tag,
+        :numerals,
+        :ner,
+        :measurements,
         :dictation
       ]
     end
@@ -71,11 +93,12 @@ defmodule Tooba.Deepgram do
   end
 
   def transcribe_audio(client, audio_data, opts \\ %{}) do
-    params = RequestParams.changeset(%RequestParams{}, opts)
-              |> Ecto.Changeset.apply_changes()
+    params =
+      RequestParams.changeset(%RequestParams{}, opts)
+      |> Ecto.Changeset.apply_changes()
 
     client
-    |> Tesla.post("/v1/listen", audio_data, %{params: params})
+    |> Tesla.post("/v1/listen", audio_data, query: params)
     |> handle_response()
   end
 
