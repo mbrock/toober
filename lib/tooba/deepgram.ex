@@ -89,12 +89,16 @@ defmodule Tooba.Deepgram do
   # Replace with your actual API key
   @api_key "your-api-key"
 
-  def start_link() do
+  def start_link(opts \\ %{}) do
     headers = [{"Authorization", "Token #{@api_key}"}]
+    params = RequestParams.changeset(%RequestParams{}, opts)
+             |> Ecto.Changeset.apply_changes()
+             |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
+             |> URI.encode_query()
 
-    WebSockex.start_link("wss://api.deepgram.com/v1/listen", __MODULE__, nil,
-      extra_headers: headers
-    )
+    url = "wss://api.deepgram.com/v1/listen?" <> params
+
+    WebSockex.start_link(url, __MODULE__, nil, extra_headers: headers)
   end
 
   def handle_frame({type, msg}, state) do
