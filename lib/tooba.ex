@@ -15,11 +15,36 @@ defmodule Tooba do
     Tooba.RDF.Store.query(query)
   end
 
-  def gensym(prefix \\ "https://node.town/") do
-    RDF.Resource.Generator.generate(
-      generator: RDF.IRI.UUID.Generator,
-      prefix: prefix,
-      uuid_format: :default
-    )
+  defmodule Mint do
+    @alphabet ~c"ybndrfg8ejkmcpqxot1uwisza345h769"
+
+    def mint_url do
+      atom = mint_atom()
+      "https://node.town/#{atom}"
+    end
+
+    defp mint_atom do
+      {t, x} = mint_key()
+      "#{t}/#{x}"
+    end
+
+    defp mint_key do
+      t =
+        DateTime.utc_now()
+        |> Calendar.strftime("%Y%m%d")
+
+      x = generate_x()
+      {t, x}
+    end
+
+    defp generate_x do
+      seq = Enum.map(1..10, fn _ -> :rand.uniform(32) end)
+      chars = Enum.map(seq, fn index -> Enum.at(@alphabet, index - 1) end)
+      List.to_string(chars)
+    end
+  end
+
+  def gensym() do
+    Mint.mint_url() |> RDF.IRI.new()
   end
 end
