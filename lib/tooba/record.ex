@@ -16,9 +16,6 @@ defmodule Tooba.Record do
         channels: 1,
         sample_format: :s16le
       })
-      |> child(%Membrane.Opus.Encoder{
-        application: :audio
-      })
       |> child(%Tooba.DeepgramSink{deepgram_opts: deepgram_opts})
 
     {[spec: spec], %{}}
