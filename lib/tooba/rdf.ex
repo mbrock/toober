@@ -16,7 +16,10 @@ defmodule Tooba.RDF.Store do
 
   @impl true
   def init(_args) do
-    {:ok, RDF.Graph.new()}
+    case load_from_file() do
+      {:ok, graph} -> {:ok, graph}
+      {:error, _reason} -> {:ok, RDF.Graph.new()}
+    end
   end
 
   @impl true
