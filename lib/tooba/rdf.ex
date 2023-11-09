@@ -23,8 +23,14 @@ defmodule Tooba.RDF.Store do
 
   @impl true
   def handle_call({:know, triples}, _from, graph) do
+    append_to_log(triples)
     new_graph = RDF.Graph.new(triples, graph)
     {:reply, :ok, new_graph}
+  end
+
+  @impl true
+  def handle_call(:retrieve_graph, _from, graph) do
+    {:reply, graph, graph}
   end
 
   @impl true
@@ -40,32 +46,28 @@ defmodule Tooba.RDF.Store do
     GenServer.cast(__MODULE__, {:store, graph})
   end
 
-  # Save the given triples to the log file, creating a new entry for each.
-  defp append_to_log(triples) when is_list(triples) do
+  # Returns the current state of the graph.
+  def retrieve_graph do
+    GenServer.call(__MODULE__, :retrieve_graph)
+  end
+
+  defp append_to_log(data) do
     log_path = rdf_store_file_path(@log_file_name)
 
     File.open(log_path, [:append], fn {:ok, file} ->
-      for triple <- triples do
-        serialized = RDF.NTriples.write_string!(triple)
-        :ok = IO.binwrite(file, serialized <> "\n")
-      end
+      serialized = RDF.NTriples.write_string!(data)
+      :ok = IO.binwrite(file, serialized <> "\n")
     end)
 
     :ok
   end
 
-  # Persists the current state of the graph and any new triples passed as arguments.
-  def persist(triples \\ []) do
+  def persist() do
     :ok = ensure_data_dir_exists()
-    :ok = append_to_log(triples)
 
-    unless Enum.empty?(triples) do
-      graph = retrieve_graph()
-      serialized = RDF.Turtle.write_string!(graph)
-      write_to_file(rdf_store_file_path(@graph_file_name), serialized)
-    else
-      :ok
-    end
+    graph = retrieve_graph()
+    serialized = RDF.Turtle.write_string!(graph)
+    write_to_file(rdf_store_file_path(@graph_file_name), serialized)
   end
 
   # Attempts to load the graph from the storage file.
