@@ -5,8 +5,9 @@ defmodule Tooba.Record do
   use Membrane.Pipeline
 
   @impl true
-  def handle_init(opts) do
+  def handle_init(_ctx, opts) do
     deepgram_opts = opts[:deepgram_opts] || %{}
+
     spec =
       child(%Membrane.PortAudio.Source{
         endpoint_id: :default,
@@ -18,8 +19,7 @@ defmodule Tooba.Record do
         application: :audio
       })
       |> child(%Membrane.Matroska.Muxer{})
-      # Replace Tooba.TranscriptionSink with Tooba.DeepgramSink and pass options
-      |> child(Tooba.DeepgramSink, %{deepgram_opts: deepgram_opts})
+      |> child(%Tooba.DeepgramSink{deepgram_opts: deepgram_opts})
 
     {[spec: spec], %{}}
   end
