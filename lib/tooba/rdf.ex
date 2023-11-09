@@ -100,4 +100,14 @@ defmodule Tooba.RDF.Store do
   # Helper functions for file operations.
   defp read_from_file(file_path), do: File.read(file_path)
   defp write_to_file(file_path, contents), do: File.write(file_path, contents)
+
+  # Demo function to add a few cool RDF triples to the store.
+  def demo do
+    triples = [
+      {"http://example.org/coolthing", "http://www.w3.org/2000/01/rdf-schema#label", "The Cool Thing"},
+      {"http://example.org/coolthing", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://example.org/CoolConcept"},
+      {"http://example.org/coolthing", "http://example.org/property/hasCoolnessFactor", "10"}
+    ]
+    know!(triples)
+  end
 end
