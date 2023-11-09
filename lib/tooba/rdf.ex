@@ -59,11 +59,17 @@ defmodule Tooba.RDF.Store do
 
   # Attempts to load the graph from the storage file.
   def load_from_file do
-    with {:ok, contents} <- read_from_file(rdf_store_file_path(@graph_file_name)),
-         {:ok, graph} <- RDF.Turtle.read_string(contents) do
-      {:ok, graph}
+    file_path = rdf_store_file_path(@graph_file_name)
+
+    if File.exists?(file_path) do
+      case read_from_file(file_path) do
+        {:ok, contents} ->
+          RDF.Turtle.read_string(contents)
+        {:error, _reason} ->
+          {:ok, RDF.Graph.new()}
+      end
     else
-      error -> error
+      {:ok, RDF.Graph.new()}
     end
   end
 
