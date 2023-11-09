@@ -1,61 +1,54 @@
-defmodule Wise do
-  @moduledoc """
-  An API client for Wise (formerly TransferWise) using the Req library.
-  """
+defmodule Tooba.Wise do
+  use Tesla
 
   @base_url "https://api.transferwise.com/"
   @api_token System.get_env("WISE_API_TOKEN")
-  @default_headers [
+
+  plug Tesla.Middleware.BaseUrl, @base_url
+
+  plug Tesla.Middleware.Headers, [
     {"Content-Type", "application/json"},
     {"Accept", "application/json"},
     {"Authorization", "Bearer #{@api_token}"}
   ]
 
-  defp request do
-    Req.new(base_url: @base_url, headers: @default_headers)
-  end
-
-  defp extract_body(response) do
-    case response do
-      {:ok, %Req.Response{body: body}} -> {:ok, body}
-      {:error, _} = error -> error
-    end
-  end
-
-  defp get(path, params \\ %{}) do
-    request()
-    |> Req.get(url: path, params: params)
-    |> extract_body()
-  end
-
-  defp post(path, payload) do
-    request()
-    |> Req.post(url: path, json: payload)
-    |> extract_body()
-  end
+  plug Tesla.Middleware.JSON
 
   def list_profiles do
     get("/v2/profiles")
+    |> handle_response()
   end
 
   def list_currencies(profile_id) do
     get("/v2/borderless-accounts-configuration/profiles/#{profile_id}/available-currencies")
+    |> handle_response()
   end
 
   def create_quote(profile_id, quote_params) do
     post("/v3/profiles/#{profile_id}/quotes", quote_params)
+    |> handle_response()
   end
 
   def list_accounts(query_params) do
-    get("/v2/accounts", query_params)
+    get("/v2/accounts", query: query_params)
+    |> handle_response()
   end
 
   def transfer_requirements(transfer_details) do
     post("/v1/transfer-requirements", transfer_details)
+    |> handle_response()
   end
 
   def create_transfer(transfer_details) do
     post("/v1/transfers", transfer_details)
+    |> handle_response()
+  end
+
+  defp handle_response(response) do
+    case response do
+      {:ok, %Tesla.Env{status: 200, body: body}} -> {:ok, body}
+      {:error, _} = error -> error
+    end
   end
 
   def example_usage do

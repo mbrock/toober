@@ -25,7 +25,7 @@ defmodule Tooba.Application do
         client_id: Tooba.Zigbee,
         handler: {Tooba.Zigbee, []},
         server: {Tortoise.Transport.Tcp, host: "localhost", port: 1883},
-        subscriptions: [{"zigbee2mqtt/#", 0}]
+        subscriptions: [{"#", 0}]
       }
     ]
 

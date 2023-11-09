@@ -32,9 +32,21 @@ defmodule Tooba.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      # tesla: HTTP client with middleware
+      {:tesla, "~> 1.8.0"},
+      # hackney: recommended HTTP client for Tesla
+      {:hackney, "~> 1.17.4"},
+      # req: HTTP client
       {:req, "~> 0.4.0"},
+      # kino: Livebook widgets
       {:kino, "~> 0.11.1"},
+      # tortoise: MQTT client
       {:tortoise, "~> 0.10"},
+      # rdf: RDF graph suite
+      {:rdf, "~> 1.1"},
+      {:rdf_xml, "~> 1.0"},
+      {:json_ld, "~> 0.3"},
+      # Phoenix dependencies
       {:phoenix, "~> 1.7.10"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.10"},
@@ -42,11 +54,14 @@ defmodule Tooba.MixProject do
       {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.20.1"},
+      # floki: HTML parser
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.2"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
+      # swoosh: email client
       {:swoosh, "~> 1.3"},
+      # finch: HTTP client
       {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},

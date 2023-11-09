@@ -1,4 +1,7 @@
 defmodule Tooba.Zigbee do
+  alias Tooba.Repo
+  alias Tooba.Zigbee.Message
+
   require Logger
 
   use Tortoise.Handler
@@ -7,7 +10,8 @@ defmodule Tooba.Zigbee do
     {:ok, nil}
   end
 
-  def handle_message(["zigbee2mqtt", "bridge", "logging"], _, state) do
+  def handle_message(["zigbee", "bridge", "logging"], x, state) do
+    Logger.info("zigbee bridge logging: #{inspect(x)}")
     {:ok, state}
   end
 
@@ -18,7 +22,16 @@ defmodule Tooba.Zigbee do
         {:error, _} -> msg
       end
 
+    # if payload is just a string, convert it to a map
+    payload =
+      case payload do
+        %{} -> payload
+        _ -> %{"payload" => payload}
+      end
+
     Logger.info("#{Enum.join(topic, "/")} #{inspect(payload)}")
+
+    Repo.insert!(%Message{topic: Enum.join(topic, "/"), payload: payload})
 
     handle(topic, payload, state)
   end
@@ -27,7 +40,7 @@ defmodule Tooba.Zigbee do
     :ok =
       Tortoise.publish(
         Tooba.Zigbee,
-        Enum.join(["zigbee2mqtt" | topic], "/"),
+        Enum.join(["zigbee" | topic], "/"),
         Jason.encode!(payload)
       )
   end
@@ -39,7 +52,7 @@ defmodule Tooba.Zigbee do
     )
   end
 
-  def handle(["zigbee2mqtt", device], payload, state) do
+  def handle(["zigbee", device], payload, state) do
     Phoenix.PubSub.broadcast!(
       Tooba.PubSub,
       "message",
@@ -51,18 +64,8 @@ defmodule Tooba.Zigbee do
     {:ok, state}
   end
 
-  # def handle(["zigbee2mqtt", "sensor"], %{"occupancy" => true}, state) do
-  #   publish(["desk-lamp-1", "set"], %{"state" => "ON", "brightness" => 255})
-  #   {:ok, state}
-  # end
-
-  # def handle(["zigbee2mqtt", "sensor"], %{"occupancy" => false}, state) do
-  #   # dim desk lamp to 50%
-  #   publish(["desk-lamp-1", "set"], %{"state" => "ON", "brightness" => 127})
-  #   {:ok, state}
-  # end
-
-  def handle(_topic, _data, state) do
+  def handle(topic, data, state) do
+    Logger.info("zigbee handler: #{inspect(topic)} #{inspect(data)}")
     {:ok, state}
   end
 
@@ -78,5 +81,187 @@ defmodule Tooba.Zigbee do
 
   def tell(device, message) do
     publish([device, "set"], message)
+  end
+
+  alias Tooba.Zigbee.Message
+
+  @doc """
+  Returns the list of messages.
+
+  ## Examples
+
+      iex> list_messages()
+      [%Message{}, ...]
+
+  """
+  def list_messages do
+    Repo.all(Message)
+  end
+
+  @doc """
+  Returns a map from topic to the latest message.
+
+  ## Examples
+
+      iex> latest_messages()
+      %{"zigbee/bridge/logging" => %Message{}, ...}
+
+  """
+  def latest_messages do
+    Repo.all(Message)
+    |> Enum.group_by(& &1.topic)
+    |> Enum.map(fn {topic, messages} -> {topic, Enum.max_by(messages, & &1.inserted_at)} end)
+    |> Enum.into(%{})
+  end
+
+  def devices do
+    devices =
+      latest_messages()
+      |> Map.get("zigbee/bridge/devices")
+      |> case do
+        nil -> nil
+        message -> message.payload["payload"]
+      end
+
+    Enum.map(devices, fn device ->
+      key = device["friendly_name"] || device["ieeeAddr"]
+      {key, device}
+    end)
+    |> Enum.into(%{})
+  end
+
+  def devices_with_values do
+    messages = latest_messages()
+    devices = devices()
+
+    Enum.map(devices, fn {key, device} ->
+      values = Map.get(messages, "zigbee/#{key}", %Message{}).payload
+      {key, %{info: device, values: values}}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defmodule DeviceInfo do
+    def extract_device_features(%{"definition" => %{"exposes" => exposes}}, device_values) do
+      # Extract features for both generic and specific exposes
+      Enum.reduce(exposes, %{}, fn expose, acc ->
+        case expose do
+          %{"features" => features} when is_list(features) ->
+            # Handle specific types with features property
+            Enum.reduce(features, acc, fn feature, acc ->
+              process_generic_type(feature, device_values, acc)
+            end)
+
+          %{"property" => _} = generic_type ->
+            # Handle generic types
+            process_generic_type(generic_type, device_values, acc)
+
+          _ ->
+            acc
+        end
+      end)
+    end
+
+    def extract_device_features(_device_info, _device_values), do: %{}
+
+    defp process_generic_type(%{"property" => property} = generic_type, device_values, acc) do
+      value = Map.get(device_values, property)
+      Map.put(acc, property, Map.put(generic_type, "value", value))
+    end
+  end
+
+  def device_info(%{info: info, values: values}) do
+    %{
+      info: info,
+      values: values,
+      features: DeviceInfo.extract_device_features(info, values)
+    }
+  end
+
+  def devices_with_info do
+    devices_with_values()
+    |> Enum.map(fn {key, device} -> {key, device_info(device)} end)
+    |> Enum.into(%{})
+  end
+
+  @doc """
+  Gets a single message.
+
+  Raises `Ecto.NoResultsError` if the Message does not exist.
+
+  ## Examples
+
+      iex> get_message!(123)
+      %Message{}
+
+      iex> get_message!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_message!(id), do: Repo.get!(Message, id)
+
+  @doc """
+  Creates a message.
+
+  ## Examples
+
+      iex> create_message(%{field: value})
+      {:ok, %Message{}}
+
+      iex> create_message(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_message(attrs \\ %{}) do
+    %Message{}
+    |> Message.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a message.
+
+  ## Examples
+
+      iex> update_message(message, %{field: new_value})
+      {:ok, %Message{}}
+
+      iex> update_message(message, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_message(%Message{} = message, attrs) do
+    message
+    |> Message.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a message.
+
+  ## Examples
+
+      iex> delete_message(message)
+      {:ok, %Message{}}
+
+      iex> delete_message(message)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_message(%Message{} = message) do
+    Repo.delete(message)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking message changes.
+
+  ## Examples
+
+      iex> change_message(message)
+      %Ecto.Changeset{data: %Message{}}
+
+  """
+  def change_message(%Message{} = message, attrs \\ %{}) do
+    Message.changeset(message, attrs)
   end
 end
