@@ -34,9 +34,6 @@ defmodule Tooba.RDF.Store do
     File.write(file_path, serialized)
   end
 
-  # Load an RDF graph from a file (on application start or as required)
-  @rdf_store_file_path "priv/data/rdf_store.ttl"
-
   def load_from_file(file_path \\ @rdf_store_file_path) do
     case File.read(file_path) do
       {:ok, contents} ->
