@@ -23,11 +23,31 @@ defmodule Tooba.RDF.Store do
   end
 
   # Serialize and persist the RDF graph to a file
-  @rdf_store_file_path "priv/data/rdf_store.ttl"
+  @app_name :tooba
+  @graph_file_name "graph.ttl"
+
+  defp rdf_store_file_path do
+    xdg_data_home = XDG.Data.home!()
+    Path.join([xdg_data_home, @app_name, @graph_file_name])
+  end
+
+  @rdf_store_file_path rdf_store_file_path()
+
+  defp ensure_data_dir_exists do
+    file_path = rdf_store_file_path()
+    dir_path = Path.dirname(file_path)
+
+    case File.mkdir_p(dir_path) do
+      :ok -> :ok
+      {:error, :eexist} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
   def persist do
+    :ok = ensure_data_dir_exists()
     graph = retrieve_graph()
-    file_path = @rdf_store_file_path
+    file_path = rdf_store_file_path()
 
     {:ok, serialized} = RDF.Turtle.write_string(graph)
 
