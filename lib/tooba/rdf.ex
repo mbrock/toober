@@ -23,12 +23,22 @@ defmodule Tooba.RDF.Store do
   end
 
   @graph_file_name "graph.ttl"
+  @log_file_name "graph.log"
 
-  defp rdf_store_file_path do
+  defp rdf_store_file_path(file_name \\ @graph_file_name) do
     xdg_data_home =
       :filename.basedir(:user_data, Atom.to_string(Application.get_application(__MODULE__)))
 
-    Path.join([xdg_data_home, @graph_file_name])
+    Path.join([xdg_data_home, file_name])
+  end
+
+  defp append_to_log(triples) when is_list(triples) do
+    log_path = rdf_store_file_path(@log_file_name)
+    :ok = File.open(log_path, [:append], fn file ->
+      for triple <- triples do
+        IO.write(file, RDF.NTriples.write_string!(triple))
+      end
+    end)
   end
 
   defp ensure_data_dir_exists do
@@ -42,14 +52,18 @@ defmodule Tooba.RDF.Store do
     end
   end
 
-  def persist do
+  def persist(triples \\ []) do
     :ok = ensure_data_dir_exists()
-    graph = retrieve_graph()
-    file_path = rdf_store_file_path()
+    :ok = append_to_log(triples)
 
-    {:ok, serialized} = RDF.Turtle.write_string(graph)
+    if Enum.empty?(triples) do
+      graph = retrieve_graph()
+      file_path = rdf_store_file_path()
 
-    File.write(file_path, serialized)
+      {:ok, serialized} = RDF.Turtle.write_string(graph)
+
+      File.write(file_path, serialized)
+    end
   end
 
   def load_from_file(file_path \\ rdf_store_file_path()) do
