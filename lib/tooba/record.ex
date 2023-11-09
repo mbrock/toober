@@ -18,7 +18,7 @@ defmodule Tooba.Record do
       })
       |> child(%Membrane.Matroska.Muxer{})
       # Replace Tooba.TranscriptionSink with Tooba.DeepgramSink and pass options
-      |> child(Tooba.DeepgramSink, deepgram_opts)
+      |> child(Tooba.DeepgramSink, %{deepgram_opts: deepgram_opts})
 
     {[spec: spec], %{}}
   end

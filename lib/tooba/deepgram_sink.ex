@@ -4,9 +4,9 @@ defmodule Tooba.DeepgramSink do
   alias Tooba.Deepgram
 
   @impl true
-  def handle_init(opts) do
+  def handle_init(%{deepgram_opts: deepgram_opts}) do
     # Start the WebSocket client and keep the pid to send messages later
-    {:ok, ws_pid} = Deepgram.start_link(opts)
+    {:ok, ws_pid} = Deepgram.start_link(deepgram_opts)
     {:ok, %{ws_pid: ws_pid}}
   end
 
