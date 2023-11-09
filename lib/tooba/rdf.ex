@@ -8,10 +8,9 @@ defmodule Tooba.RDF.Store do
   @graph_file_name "graph.ttl"
   @log_file_name "graph.log"
 
-  # Initializes and starts the Agent with an empty RDF graph.
   @spec start_link() :: {:ok, pid()} | {:error, any()}
   def start_link do
-    GenServer.start_link(__MODULE__, RDF.Graph.new(), name: __MODULE__)
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   @impl true
@@ -72,7 +71,7 @@ defmodule Tooba.RDF.Store do
   def load_from_file do
     with {:ok, contents} <- read_from_file(rdf_store_file_path(@graph_file_name)),
          {:ok, graph} <- RDF.Turtle.read_string(contents) do
-      store_graph(graph)
+      {:ok, graph}
     else
       error -> error
     end
