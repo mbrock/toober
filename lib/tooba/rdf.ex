@@ -65,8 +65,8 @@ defmodule Tooba.RDF.Store do
       case read_from_file(file_path) do
         {:ok, contents} ->
           RDF.Turtle.read_string(contents)
-        {:error, _reason} ->
-          {:ok, RDF.Graph.new()}
+        {:error, _reason} = error ->
+          error
       end
     else
       {:ok, RDF.Graph.new()}
