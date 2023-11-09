@@ -55,18 +55,12 @@ defmodule Tooba.Deepgram do
       field :language, :string, default: "en"
       field :punctuate, :boolean, default: false
       field :profanity_filter, :boolean, default: false
-      field :redact, {:array, :string}
       field :diarize, :boolean, default: false
       field :diarize_version, :string
       field :smart_format, :boolean, default: false
       field :filler_words, :boolean, default: false
       field :multichannel, :boolean, default: false
       field :alternatives, :integer, default: 1
-      field :search, {:array, :string}
-      field :replace, {:array, :string}
-      field :callback, :string
-      field :keywords, {:array, :string}
-      field :tag, :string
       field :numerals, :boolean, default: false
       field :interim_results, :boolean, default: true
     end
@@ -86,7 +80,6 @@ defmodule Tooba.Deepgram do
     params =
       RequestParams.changeset(%RequestParams{}, opts)
       |> Ecto.Changeset.apply_changes()
-      # Remove the __struct__ field
       |> Map.delete(:__struct__)
       |> Map.to_list()
       |> Enum.filter(fn {_k, v} -> v != nil end)

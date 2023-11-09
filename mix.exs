@@ -51,6 +51,7 @@ defmodule Tooba.MixProject do
       {:rdf, "~> 1.1"},
       {:rdf_xml, "~> 1.0"},
       {:json_ld, "~> 0.3"},
+      {:elixir_uuid, "~> 1.2"},
       # Phoenix dependencies
       {:phoenix, "~> 1.7.10"},
       {:phoenix_ecto, "~> 4.4"},

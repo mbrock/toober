@@ -37,6 +37,11 @@ defmodule Tooba.RDF.Store do
     GenServer.call(__MODULE__, {:know, data})
   end
 
+  def query(query) do
+    graph = retrieve_graph()
+    RDF.Graph.query(graph, query)
+  end
+
   # Returns the current state of the graph.
   def retrieve_graph do
     GenServer.call(__MODULE__, :retrieve_graph)
