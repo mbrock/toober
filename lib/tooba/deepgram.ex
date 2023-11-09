@@ -102,6 +102,7 @@ defmodule Tooba.Deepgram do
       |> URI.encode_query()
 
     url = "wss://api.deepgram.com/v1/listen?" <> params
+    IO.inspect(params, label: "Params")
 
     WebSockex.start_link(url, __MODULE__, nil, extra_headers: headers)
   end
