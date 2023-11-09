@@ -1,11 +1,12 @@
 defmodule Tooba.DeepgramSink do
   use Membrane.Sink
 
-  def_input_pad :input,
+  def_input_pad(:input,
     demand_unit: :buffers,
     caps: :any,
     availability: :on_request,
     mode: :pull
+  )
 
   def_options(
     deepgram_opts: [
