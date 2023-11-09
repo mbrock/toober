@@ -19,7 +19,6 @@ defmodule Tooba.Deepgram do
         :tier,
         :version,
         :language,
-        :detect_language,
         :punctuate,
         :profanity_filter,
         :redact,
@@ -33,16 +32,8 @@ defmodule Tooba.Deepgram do
         :replace,
         :callback,
         :keywords,
-        :paragraphs,
-        :summarize,
-        :detect_topics,
-        :utterances,
-        :utt_split,
         :tag,
-        :numerals,
-        :ner,
-        :measurements,
-        :dictation
+        :numerals
       ]
     end
 
