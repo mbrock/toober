@@ -33,7 +33,8 @@ defmodule Tooba.Deepgram do
         :callback,
         :keywords,
         :tag,
-        :numerals
+        :numerals,
+        :interim_results
       ]
     end
 
@@ -61,6 +62,7 @@ defmodule Tooba.Deepgram do
       field :keywords, {:array, :string}
       field :tag, :string
       field :numerals, :boolean, default: false
+      field :interim_results, :boolean, default: true
     end
   end
 
@@ -97,9 +99,14 @@ defmodule Tooba.Deepgram do
     {:ok, state}
   end
 
-  def handle_cast({:send, {type, msg} = frame}, state) do
-    IO.puts("Sending #{type} frame with payload: #{msg}")
-    {:reply, frame, state}
+  def handle_disconnect(connection_status_map, state) do
+    IO.puts("Disconnected - Status: #{inspect(connection_status_map)}")
+    {:ok, state}
+  end
+
+  def handle_info(msg, state) do
+    IO.puts("Received Info - Message: #{inspect(msg)}")
+    {:ok, state}
   end
 
   # Define other necessary callbacks such as handle_disconnect/2 if needed
