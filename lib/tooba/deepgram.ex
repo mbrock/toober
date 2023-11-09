@@ -84,15 +84,20 @@ defmodule Tooba.Deepgram do
 
   @base_url "https://api.deepgram.com/"
 
+  defp api_key do
+    Application.get_env(:tooba, :deepgram_api_key)
+  end
+
   use WebSockex
 
   def start_link(opts \\ %{}) do
-    api_key = Application.get_env(:tooba, :deepgram_api_key)
-    headers = [{"Authorization", "Token #{api_key}"}]
-    params = RequestParams.changeset(%RequestParams{}, opts)
-             |> Ecto.Changeset.apply_changes()
-             |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
-             |> URI.encode_query()
+    headers = [{"Authorization", "Token #{api_key()}"}]
+
+    params =
+      RequestParams.changeset(%RequestParams{}, opts)
+      |> Ecto.Changeset.apply_changes()
+      |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
+      |> URI.encode_query()
 
     url = "wss://api.deepgram.com/v1/listen?" <> params
 
@@ -111,12 +116,10 @@ defmodule Tooba.Deepgram do
 
   # Define other necessary callbacks such as handle_disconnect/2 if needed
 
-  def new(api_key) do
-    @api_key = api_key
-
+  def new() do
     Tesla.client([
       {Tesla.Middleware.BaseUrl, @base_url},
-      {Tesla.Middleware.Headers, [{"Authorization", "Token #{api_key}"}]},
+      {Tesla.Middleware.Headers, [{"Authorization", "Token #{api_key()}"}]},
       Tesla.Middleware.JSON
     ])
   end
