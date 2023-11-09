@@ -32,6 +32,10 @@ defmodule Tooba.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:membrane_core, "~> 1.0.0"},
+      {:membrane_opus_plugin, "~> 0.18.0"},
+      {:membrane_ogg_plugin, "~> 0.2.1"},
+      {:membrane_portaudio_plugin, "~> 0.17.3"},
       # tesla: HTTP client with middleware
       {:tesla, "~> 1.8.0"},
       # hackney: recommended HTTP client for Tesla
