@@ -1,9 +1,24 @@
 defmodule Tooba.Record do
+  def list_input_sources(format) do
+    {output, _exit_code} = System.cmd("ffmpeg", ["-list_devices", "true", "-f", format, "-i", "dummy"], stderr_to_stdout: true)
+    # Parse the output to extract device names and return them
+    # The parsing will depend on the format of the output, which can vary by platform
+    # This is a placeholder for the parsing logic
+    devices = parse_device_list(output)
+    devices
+  end
+
+  defp parse_device_list(output) do
+    # Implement parsing logic here based on the expected output format
+    # This is a placeholder function
+    []
+  end
+
   def start_ffmpeg_stream do
     command = "ffmpeg"
     args = [
-      "-f", "pulse", # or "alsa" for ALSA on Linux, "avfoundation" for macOS, etc.
-      "-i", "default", # this might be different depending on your system
+      "-f", "pulse", # Replace "pulse" with the actual format you want to use
+      "-i", "default", # Replace "default" with the actual input source you want to use
       "-acodec", "libopus",
       "-f", "webm",
       "-content_type", "audio/webm",
