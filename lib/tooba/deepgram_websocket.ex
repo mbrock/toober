@@ -14,14 +14,14 @@ defmodule Tooba.DeepgramWebsocket do
     {:ok, state}
   end
 
-  def handle_frame({:text, msg}, conn, state) do
-    IO.inspect(msg)
+  def handle_frame({type, msg}, state) do
+    IO.puts "Received Message - Type: #{inspect type} -- Message: #{inspect msg}"
     {:ok, state}
   end
 
-  def handle_cast({:send_audio, audio_data}, conn) do
-    Websockex.send_frame(conn, {:binary, audio_data})
-    {:noreply, state}
+  def handle_cast({:send, {type, msg} = frame}, state) do
+    IO.puts "Sending #{type} frame with payload: #{msg}"
+    {:reply, frame, state}
   end
 
   # Define other necessary callbacks such as handle_disconnect/2 if needed
