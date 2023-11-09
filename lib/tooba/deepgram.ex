@@ -102,9 +102,21 @@ defmodule Tooba.Deepgram do
 
   def handle_frame({:text, msg}, state) do
     case Jason.decode(msg) do
-      {:ok, %{"type" => "Results", "channel" => %{"alternatives" => alternatives}}} ->
+      {:ok, %{"type" => "Results", "channel" => %{"alternatives" => alternatives}, "metadata" => %{"request_id" => request_id}}} ->
         transcript = Enum.map(alternatives, fn alt -> alt["transcript"] end)
         IO.puts("Transcript: #{Enum.join(transcript, " ")}")
+
+        # Insert the event into the database
+        event_attrs = %{
+          uuid: Ecto.UUID.generate(),
+          timestamp: DateTime.utc_now(),
+          payload: msg,
+          resource_type: "deepgram_transcription",
+          resource_id: request_id
+        }
+        %Tooba.Event{}
+        |> Tooba.Event.changeset(event_attrs)
+        |> Tooba.Repo.insert()
       {:error, _} ->
         IO.puts("Error parsing JSON message")
     end
