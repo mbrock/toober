@@ -3,7 +3,7 @@ defmodule Tooba.RDF.Store do
   A persistent RDF graph store.
   """
 
-  use Agent
+  use GenServer
 
   @graph_file_name "graph.ttl"
   @log_file_name "graph.log"
@@ -11,17 +11,30 @@ defmodule Tooba.RDF.Store do
   # Initializes and starts the Agent with an empty RDF graph.
   @spec start_link() :: {:ok, pid()} | {:error, any()}
   def start_link do
-    Agent.start_link(fn -> RDF.Graph.new() end, name: __MODULE__)
+    GenServer.start_link(__MODULE__, RDF.Graph.new(), name: __MODULE__)
   end
 
-  # Store the given graph in memory.
-  def store_graph(graph) when is_struct(graph, RDF.Graph) do
-    Agent.update(__MODULE__, fn _ -> graph end)
+  @impl true
+  def init(_args) do
+    {:ok, RDF.Graph.new()}
   end
 
-  # Retrieve the graph from memory.
+  @impl true
+  def handle_call(:retrieve, _from, graph) do
+    {:reply, graph, graph}
+  end
+
+  @impl true
+  def handle_cast({:store, new_graph}, _graph) do
+    {:noreply, new_graph}
+  end
+
   def retrieve_graph do
-    Agent.get(__MODULE__, fn graph -> graph end)
+    GenServer.call(__MODULE__, :retrieve)
+  end
+
+  def store_graph(graph) do
+    GenServer.cast(__MODULE__, {:store, graph})
   end
 
   # Save the given triples to the log file, creating a new entry for each.
