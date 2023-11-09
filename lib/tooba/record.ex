@@ -23,15 +23,16 @@ defmodule Tooba.Record do
 
     {[spec: spec], %{}}
   end
+
   # Demo function to start and stop the pipeline after 5 seconds
   def demo do
     # Start the pipeline
-    {:ok, pid} = Tooba.Record.start_link(%{})
+    {:ok, _supervisor_pid, pid} = Tooba.Record.start_link(%{})
 
     # Wait for 5 seconds
     :timer.sleep(5_000)
 
     # Stop the pipeline
-    Membrane.Pipeline.stop_and_terminate(pid, :normal)
+    :ok = Membrane.Pipeline.terminate(pid)
   end
 end

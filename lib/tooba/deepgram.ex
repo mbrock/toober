@@ -96,7 +96,8 @@ defmodule Tooba.Deepgram do
     params =
       RequestParams.changeset(%RequestParams{}, opts)
       |> Ecto.Changeset.apply_changes()
-      |> Map.delete(:__struct__) # Remove the __struct__ field
+      # Remove the __struct__ field
+      |> Map.delete(:__struct__)
       |> Map.to_list()
       |> Enum.filter(fn {_k, v} -> v != nil end)
       |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
@@ -104,6 +105,7 @@ defmodule Tooba.Deepgram do
 
     url = "wss://api.deepgram.com/v1/listen?" <> params
     IO.inspect(params, label: "Params")
+    IO.inspect(headers, label: "Headers")
 
     WebSockex.start_link(url, __MODULE__, nil, extra_headers: headers)
   end
