@@ -33,7 +33,7 @@ defmodule Tooba.RDF.Store do
     {:reply, graph, graph}
   end
 
-  def know!(triples) when is_list(triples) do
+  def know!(triples) do
     GenServer.call(__MODULE__, {:know, triples})
   end
 
@@ -65,6 +65,7 @@ defmodule Tooba.RDF.Store do
       case read_from_file(file_path) do
         {:ok, contents} ->
           RDF.Turtle.read_string(contents)
+
         {:error, _reason} = error ->
           error
       end
