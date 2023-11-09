@@ -86,8 +86,10 @@ defmodule Tooba.Deepgram do
 
   use WebSockex
 
-  # Replace with your actual API key
-  @api_key "your-api-key"
+  # Replace the hardcoded API key with a function call to get it from the application config
+  defp api_key do
+    Application.get_env(:tooba, :deepgram_api_key)
+  end
 
   def start_link(opts \\ %{}) do
     headers = [{"Authorization", "Token #{@api_key}"}]

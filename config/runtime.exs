@@ -1,10 +1,7 @@
 import Config
 
-# config/runtime.exs is executed for all environments, including
-# during releases. It is executed after compilation and before the
-# system starts, so it is typically used to load production configuration
-# and secrets from environment variables or elsewhere. Do not define
-# any compile-time configuration in here, as it won't be applied.
+# Add the following line inside the `if config_env() == :prod do` block
+config :tooba, deepgram_api_key: System.get_env("DEEPGRAM_API_KEY") || raise "DEEPGRAM_API_KEY environment variable not set"
 # The block below contains prod specific runtime configuration.
 
 # ## Using releases
