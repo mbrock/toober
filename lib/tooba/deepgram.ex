@@ -96,6 +96,8 @@ defmodule Tooba.Deepgram do
     params =
       RequestParams.changeset(%RequestParams{}, opts)
       |> Ecto.Changeset.apply_changes()
+      |> Map.to_list()
+      |> Enum.filter(fn {_k, v} -> v != nil end)
       |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
       |> URI.encode_query()
 
