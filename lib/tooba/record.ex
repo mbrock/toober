@@ -5,7 +5,8 @@ defmodule Tooba.Record do
   use Membrane.Pipeline
 
   @impl true
-  def handle_init(_, _) do
+  def handle_init(opts) do
+    deepgram_opts = opts[:deepgram_opts] || %{}
     spec =
       child(%Membrane.PortAudio.Source{
         endpoint_id: :default,
