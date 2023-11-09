@@ -7,13 +7,14 @@ defmodule Tooba.Record do
   @impl true
   def handle_init(_ctx, opts) do
     deepgram_opts = opts[:deepgram_opts] || %{}
+    sample_rate = Map.get(deepgram_opts, :sample_rate, 48_000)
+    channels = Map.get(deepgram_opts, :channels, 1)
 
     spec =
       child(%Membrane.PortAudio.Source{
         endpoint_id: :default,
-        sample_rate: 48_000,
-        # Adjusted to support mono audio
-        channels: 1,
+        sample_rate: sample_rate,
+        channels: channels,
         sample_format: :s16le
       })
       |> child(%Tooba.DeepgramSink{deepgram_opts: deepgram_opts})
