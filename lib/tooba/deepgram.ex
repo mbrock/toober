@@ -86,13 +86,9 @@ defmodule Tooba.Deepgram do
 
   use WebSockex
 
-  # Replace the hardcoded API key with a function call to get it from the application config
-  defp api_key do
-    Application.get_env(:tooba, :deepgram_api_key)
-  end
-
   def start_link(opts \\ %{}) do
-    headers = [{"Authorization", "Token #{@api_key}"}]
+    api_key = Application.get_env(:tooba, :deepgram_api_key)
+    headers = [{"Authorization", "Token #{api_key}"}]
     params = RequestParams.changeset(%RequestParams{}, opts)
              |> Ecto.Changeset.apply_changes()
              |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
