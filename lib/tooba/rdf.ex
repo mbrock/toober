@@ -22,12 +22,12 @@ defmodule Tooba.RDF.Store do
     Agent.get(__MODULE__, fn graph -> graph end)
   end
 
-  # Serialize and persist the RDF graph to a file
-  @app_name Application.get_application(__MODULE__)
   @graph_file_name "graph.ttl"
 
   defp rdf_store_file_path do
-    xdg_data_home = :filename.basedir(:user_data, Atom.to_string(@app_name))
+    xdg_data_home =
+      :filename.basedir(:user_data, Atom.to_string(Application.get_application(__MODULE__)))
+
     Path.join([xdg_data_home, @graph_file_name])
   end
 
