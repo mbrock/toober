@@ -12,7 +12,7 @@ defmodule Tooba.Record do
       child(%Membrane.PortAudio.Source{
         endpoint_id: :default,
         sample_rate: 48_000,
-        channels: 2,
+        channels: 1, # Adjusted to support mono audio
         sample_format: :s16le
       })
       |> child(%Membrane.Opus.Encoder{
