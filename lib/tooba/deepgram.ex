@@ -91,21 +91,19 @@ defmodule Tooba.Deepgram do
 
   def start_link() do
     headers = [{"Authorization", "Token #{@api_key}"}]
-    Websockex.start_link("wss://api.deepgram.com/v1/listen", __MODULE__, nil, headers: headers)
-  end
 
-  def handle_connect(conn, state) do
-    IO.puts("Connected to Deepgram WebSocket")
-    {:ok, state}
+    WebSockex.start_link("wss://api.deepgram.com/v1/listen", __MODULE__, nil,
+      extra_headers: headers
+    )
   end
 
   def handle_frame({type, msg}, state) do
-    IO.puts "Received Message - Type: #{inspect type} -- Message: #{inspect msg}"
+    IO.puts("Received Message - Type: #{inspect(type)} -- Message: #{inspect(msg)}")
     {:ok, state}
   end
 
   def handle_cast({:send, {type, msg} = frame}, state) do
-    IO.puts "Sending #{type} frame with payload: #{msg}"
+    IO.puts("Sending #{type} frame with payload: #{msg}")
     {:reply, frame, state}
   end
 
@@ -113,6 +111,7 @@ defmodule Tooba.Deepgram do
 
   def new(api_key) do
     @api_key = api_key
+
     Tesla.client([
       {Tesla.Middleware.BaseUrl, @base_url},
       {Tesla.Middleware.Headers, [{"Authorization", "Token #{api_key}"}]},
