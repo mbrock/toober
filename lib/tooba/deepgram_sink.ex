@@ -4,7 +4,11 @@ defmodule Tooba.DeepgramSink do
   def_input_pad(:input,
     demand_unit: :buffers,
     demand_mode: :auto,
-    accepted_format: Membrane.Opus
+    accepted_format: %Membrane.RawAudio{
+      sample_format: :s16le,
+      channels: 1,
+      sample_rate: 48_000
+    }
   )
 
   def_options(
@@ -23,16 +27,7 @@ defmodule Tooba.DeepgramSink do
   end
 
   @impl true
-  def handle_info({:websocket, {:text, json}}, _ctx, state) do
-    # Log the JSON message from Deepgram
-    IO.inspect(json, label: "Received JSON from Deepgram")
-    {[], state}
-  end
-
-  @impl true
   def handle_write(:input, buffer, _ctx, %{ws_pid: ws_pid} = state) do
-    # Assuming buffer contains the audio data
-    # Send the audio data to the WebSocket client as a binary frame
     WebSockex.send_frame(ws_pid, {:binary, buffer.payload})
     {[], state}
   end
