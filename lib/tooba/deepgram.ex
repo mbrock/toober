@@ -96,6 +96,7 @@ defmodule Tooba.Deepgram do
     params =
       RequestParams.changeset(%RequestParams{}, opts)
       |> Ecto.Changeset.apply_changes()
+      |> Map.delete(:__struct__) # Remove the __struct__ field
       |> Map.to_list()
       |> Enum.filter(fn {_k, v} -> v != nil end)
       |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
