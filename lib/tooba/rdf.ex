@@ -23,9 +23,11 @@ defmodule Tooba.RDF.Store do
   end
 
   # Serialize and persist the RDF graph to a file
+  @rdf_store_file_path "priv/data/rdf_store.ttl"
+
   def persist do
     graph = retrieve_graph()
-    file_path = "rdf_store.ttl"
+    file_path = @rdf_store_file_path
 
     {:ok, serialized} = RDF.Turtle.write_string(graph)
 
@@ -33,7 +35,9 @@ defmodule Tooba.RDF.Store do
   end
 
   # Load an RDF graph from a file (on application start or as required)
-  def load_from_file(file_path \\ "rdf_store.ttl") do
+  @rdf_store_file_path "priv/data/rdf_store.ttl"
+
+  def load_from_file(file_path \\ @rdf_store_file_path) do
     case File.read(file_path) do
       {:ok, contents} ->
         case RDF.Turtle.read_string(contents) do
