@@ -23,7 +23,7 @@ defmodule Tooba.RDF.Store do
   end
 
   # Serialize and persist the RDF graph to a file
-  @app_name :tooba
+  @app_name Application.get_application(__MODULE__)
   @graph_file_name "graph.ttl"
 
   defp rdf_store_file_path do
