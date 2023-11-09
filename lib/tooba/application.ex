@@ -9,6 +9,7 @@ defmodule Tooba.Application do
   def start(_type, _args) do
     children =
       [
+        Tooba.RDF.Store,
         ToobaWeb.Telemetry,
         Tooba.Repo,
         {DNSCluster, query: Application.get_env(:tooba, :dns_cluster_query) || :ignore},

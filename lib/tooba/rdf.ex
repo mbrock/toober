@@ -6,28 +6,17 @@ defmodule Tooba.RDF.Store do
   use GenServer
 
   @graph_file_name "graph.ttl"
-  @log_file_name "graph.log"
+  @log_file_name "graph.nt"
 
-  @spec start_link() :: {:ok, pid()} | {:error, any()}
-  def start_link do
+  def start_link(_args) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   @impl true
   def init(_args) do
-    graph = load_from_file()
-    log_graph = load_log_file()
-
-    case {graph, log_graph} do
-      {{:ok, graph}, {:ok, log_graph}} ->
-        merged_graph = RDF.Graph.merge(graph, log_graph)
-        {:ok, merged_graph}
-
-      {{:ok, graph}, {:error, _}} ->
-        {:ok, graph}
-
-      {{:error, _} = error, _} ->
-        error
+    with {:ok, graph1} <- load_from_file(@graph_file_name),
+         {:ok, graph2} <- load_from_file(@log_file_name) do
+      {:ok, RDF.Graph.add(graph2, graph1)}
     end
   end
 
@@ -67,18 +56,11 @@ defmodule Tooba.RDF.Store do
     consolidate_log()
   end
 
-  # Attempts to load the graph from the storage file.
-  def load_from_file do
-    file_path = rdf_store_file_path(@graph_file_name)
+  def load_from_file(name) do
+    file_path = rdf_store_file_path(name)
 
     if File.exists?(file_path) do
-      case read_from_file(file_path) do
-        {:ok, contents} ->
-          RDF.Turtle.read_string(contents)
-
-        {:error, _reason} = error ->
-          error
-      end
+      RDF.Serialization.read_file(file_path)
     else
       {:ok, RDF.Graph.new()}
     end
