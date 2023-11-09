@@ -43,6 +43,9 @@ defmodule Tooba.Deepgram do
     end
 
     embedded_schema do
+      field :encoding, :string
+      field :sample_rate, :integer
+      field :channels, :integer
       field :model, :string, default: "general"
       field :tier, :string, default: "base"
       field :version, :string, default: "latest"
