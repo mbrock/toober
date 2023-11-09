@@ -12,13 +12,13 @@ defmodule Tooba.Record do
       child(%Membrane.PortAudio.Source{
         endpoint_id: :default,
         sample_rate: 48_000,
-        channels: 1, # Adjusted to support mono audio
+        # Adjusted to support mono audio
+        channels: 1,
         sample_format: :s16le
       })
       |> child(%Membrane.Opus.Encoder{
         application: :audio
       })
-      |> child(%Membrane.Matroska.Muxer{})
       |> child(%Tooba.DeepgramSink{deepgram_opts: deepgram_opts})
 
     {[spec: spec], %{}}

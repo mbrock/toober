@@ -30,7 +30,7 @@ defmodule Tooba.DeepgramSink do
   end
 
   @impl true
-  def handle_process(:input, buffer, _ctx, %{ws_pid: ws_pid} = state) do
+  def handle_write(:input, buffer, _ctx, %{ws_pid: ws_pid} = state) do
     # Assuming buffer contains the audio data
     # Send the audio data to the WebSocket client as a binary frame
     WebSockex.send_frame(ws_pid, {:binary, buffer.payload})
