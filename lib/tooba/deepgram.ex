@@ -100,8 +100,14 @@ defmodule Tooba.Deepgram do
     WebSockex.start_link(url, __MODULE__, nil, extra_headers: headers)
   end
 
-  def handle_frame({type, msg}, state) do
-    IO.puts("Received Message - Type: #{inspect(type)} -- Message: #{inspect(msg)}")
+  def handle_frame({:text, msg}, state) do
+    case Jason.decode(msg) do
+      {:ok, %{"type" => "Results", "channel" => %{"alternatives" => alternatives}}} ->
+        transcript = Enum.map(alternatives, fn alt -> alt["transcript"] end)
+        IO.puts("Transcript: #{Enum.join(transcript, " ")}")
+      {:error, _} ->
+        IO.puts("Error parsing JSON message")
+    end
     {:ok, state}
   end
 
