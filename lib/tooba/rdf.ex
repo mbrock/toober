@@ -33,17 +33,8 @@ defmodule Tooba.RDF.Store do
     {:reply, graph, graph}
   end
 
-  @impl true
-  def handle_cast({:store, new_graph}, _graph) do
-    {:noreply, new_graph}
-  end
-
   def know!(triples) when is_list(triples) do
     GenServer.call(__MODULE__, {:know, triples})
-  end
-
-  def store_graph(graph) do
-    GenServer.cast(__MODULE__, {:store, graph})
   end
 
   # Returns the current state of the graph.
@@ -78,13 +69,14 @@ defmodule Tooba.RDF.Store do
 
   # Combines the persistent storage and the log file, effectively consolidating the store.
   def consolidate_log do
+    :ok = ensure_data_dir_exists()
     log_path = rdf_store_file_path(@log_file_name)
 
     with {:ok, log_contents} <- read_from_file(log_path),
          {:ok, graph} <- RDF.NTriples.read_string(log_contents),
-         {:ok, serialized} <- RDF.Turtle.write_string(graph) do
-      write_to_file(rdf_store_file_path(@graph_file_name), serialized)
-      File.rm(log_path)
+         {:ok, serialized} <- RDF.Turtle.write_string(graph),
+         :ok <- write_to_file(rdf_store_file_path(@graph_file_name), serialized) do
+      File.write(log_path, "")
     else
       error -> error
     end
