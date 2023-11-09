@@ -27,11 +27,9 @@ defmodule Tooba.RDF.Store do
   @graph_file_name "graph.ttl"
 
   defp rdf_store_file_path do
-    xdg_data_home = XDG.Data.home!()
-    Path.join([xdg_data_home, @app_name, @graph_file_name])
+    xdg_data_home = :filename.basedir(:user_data, @app_name)
+    Path.join([xdg_data_home, @graph_file_name])
   end
-
-  @rdf_store_file_path rdf_store_file_path()
 
   defp ensure_data_dir_exists do
     file_path = rdf_store_file_path()
