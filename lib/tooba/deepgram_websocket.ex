@@ -1,7 +1,8 @@
 defmodule Tooba.DeepgramWebsocket do
-  use Websockex
+  use WebSockex
 
-  @api_key "your-api-key" # Replace with your actual API key
+  # Replace with your actual API key
+  @api_key "your-api-key"
 
   def start_link() do
     headers = [{"Authorization", "Token #{@api_key}"}]
