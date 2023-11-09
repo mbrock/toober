@@ -23,7 +23,8 @@ defmodule Tooba.Record do
         application: :audio
       })
       |> child(%Membrane.Matroska.Muxer{})
-      |> child(Tooba.TranscriptionSink)
+      # Replace Tooba.TranscriptionSink with Tooba.DeepgramSink and pass options
+      |> child(Tooba.DeepgramSink, deepgram_opts)
 
     {[spec: spec], %{}}
   end
