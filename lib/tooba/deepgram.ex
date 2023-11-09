@@ -48,9 +48,12 @@ defmodule Tooba.Deepgram do
     ])
   end
 
-  def transcribe_audio(client, audio_data, opts \\ []) do
+  def transcribe_audio(client, audio_data, opts \\ %{}) do
+    params = RequestParams.changeset(%RequestParams{}, opts)
+              |> Ecto.Changeset.apply_changes()
+
     client
-    |> Tesla.post("/v1/listen", audio_data, opts)
+    |> Tesla.post("/v1/listen", audio_data, %{params: params})
     |> handle_response()
   end
 
