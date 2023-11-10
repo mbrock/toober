@@ -8,7 +8,12 @@ defmodule ToobaWeb.ResourceLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :descriptions, Tooba.graph() |> RDF.Data.descriptions())}
+    descriptions = Tooba.graph() |> RDF.Data.descriptions()
+    {:ok, stream(socket, :descriptions, descriptions, dom_id: &dom_id/1)}
+  end
+
+  defp dom_id(description) do
+    RDF.IRI.to_string(description.subject) |> :erlang.phash2() |> Integer.to_string()
   end
 
   @impl true
