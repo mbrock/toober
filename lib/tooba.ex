@@ -15,6 +15,14 @@ defmodule Tooba do
     Tooba.RDF.Store.query(query)
   end
 
+  def graph() do
+    Tooba.RDF.Store.retrieve_graph()
+  end
+
+  def resource(iri) do
+    graph() |> RDF.Data.description(iri)
+  end
+
   defmodule Mint do
     @alphabet ~c"ybndrfg8ejkmcpqxot1uwisza345h769"
 
