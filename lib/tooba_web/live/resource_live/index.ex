@@ -51,6 +51,7 @@ defmodule ToobaWeb.ResourceLive.Index do
         <ToobaWeb.ResourceLive.CardComponent.description
           title={dom_id}
           subject={description.subject}
+          description={description}
           triples={triples_as_spo_maps(description)}
         />
       <% end %>

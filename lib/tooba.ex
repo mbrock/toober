@@ -1,3 +1,38 @@
+defmodule EdgeToTree do
+  def edges_to_tree(edges) do
+    edges
+    |> Enum.reduce(%{}, &accumulate_edges/2)
+    |> build_forest()
+    |> hide_bnodes()
+  end
+
+  defp accumulate_edges({child, parent}, acc) do
+    acc
+    |> Map.update(parent, [child], &[child | &1])
+    |> Map.put_new(child, [])
+  end
+
+  defp build_forest(map) do
+    roots = find_roots(map)
+    Enum.map(roots, fn root -> build_subtree(root, map) end)
+  end
+
+  defp find_roots(map) do
+    map
+    |> Enum.reject(fn {key, _} -> Enum.any?(map, fn {_, v} -> key in v end) end)
+    |> Enum.map(fn {k, _} -> k end)
+  end
+
+  defp build_subtree(node, map) do
+    children = Map.get(map, node, [])
+    {node, Enum.map(children, &build_subtree(&1, map))}
+  end
+
+  defp hide_bnodes(forest) do
+    forest
+  end
+end
+
 defmodule Tooba do
   defmodule Term do
     require Logger
@@ -77,6 +112,12 @@ defmodule Tooba do
     [NS.BFO.__file__(), NS.IAO.__file__(), NS.RO.__file__()]
     |> Enum.map(&RDF.read_file!(&1))
     |> Enum.reduce(RDF.Graph.new(), &RDF.Graph.add/2)
+  end
+
+  def rdf_subclass_relations(graph) do
+    graph
+    |> RDF.Graph.query([{:s?, RDF.NS.RDFS.subClassOf(), :o?}])
+    |> Enum.map(fn %{s: s, o: o} -> {s, o} end)
   end
 
   defmodule Mint do
