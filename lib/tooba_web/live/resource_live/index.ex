@@ -8,7 +8,7 @@ defmodule ToobaWeb.ResourceLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    descriptions = Tooba.graph() |> RDF.Data.descriptions()
+    descriptions = Tooba.vocabulary_graph() |> RDF.Data.descriptions() |> exclude_bnodes()
 
     {:ok,
      socket
@@ -16,8 +16,25 @@ defmodule ToobaWeb.ResourceLive.Index do
      |> stream(:descriptions, descriptions)}
   end
 
-  defp dom_id(description) do
-    RDF.IRI.to_string(description.subject)
+  defp exclude_bnodes(descriptions) do
+    Enum.filter(descriptions, fn description ->
+      case description.subject do
+        %RDF.BlankNode{} -> false
+        _ -> true
+      end
+    end)
+  end
+
+  defp dom_id(%RDF.Description{} = description) do
+    dom_id(description.subject)
+  end
+
+  defp dom_id(%RDF.IRI{} = iri) do
+    RDF.IRI.to_string(iri)
+  end
+
+  defp dom_id(%RDF.BlankNode{} = bnode) do
+    bnode.value
   end
 
   defp triples_as_spo_maps(description) do
@@ -33,6 +50,7 @@ defmodule ToobaWeb.ResourceLive.Index do
       <%= for {dom_id, description} <- @streams.descriptions do %>
         <ToobaWeb.ResourceLive.CardComponent.description
           title={dom_id}
+          subject={description.subject}
           triples={triples_as_spo_maps(description)}
         />
       <% end %>

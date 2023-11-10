@@ -1,4 +1,54 @@
 defmodule Tooba do
+  defmodule Term do
+    require Logger
+
+    def term_handler(_, "_" <> _) do
+      :ignore
+    end
+
+    def term_handler(_, "erroneous") do
+      {:error, "erroneous term"}
+    end
+
+    def term_handler(:resource, term) do
+      {:ok, term}
+    end
+
+    def term_handler(:property, term) do
+      {:ok, String.downcase(term)}
+    end
+
+    def term_handler(nil, "RO_" <> term) do
+      # These are some kind of meta-properties?
+      Logger.debug("Ignoring RO_#{term}")
+      :ignore
+    end
+  end
+
+  defmodule NS do
+    use RDF.Vocabulary.Namespace
+
+    defvocab(RO,
+      base_iri: "http://www.obofoundry.org/obo/",
+      file: "ro.owl.rdf",
+      terms: {Tooba.Term, :term_handler}
+    )
+
+    defvocab(IAO,
+      base_iri: "http://purl.obolibrary.org/obo/",
+      file: "iao.owl.rdf",
+      ignore: ~w[iao.owl uo.owl obi.owl pato.owl bfo.owl],
+      terms: {Tooba.Term, :term_handler}
+    )
+
+    defvocab(BFO,
+      base_iri: "http://purl.obolibrary.org/obo/",
+      file: "bfo.owl.rdf",
+      ignore: ~w[iao.owl bfo.owl],
+      terms: {Tooba.Term, :term_handler}
+    )
+  end
+
   @moduledoc """
   Tooba keeps the contexts that define your domain
   and business logic.
@@ -21,6 +71,12 @@ defmodule Tooba do
 
   def resource(iri) do
     graph() |> RDF.Data.description(iri)
+  end
+
+  def vocabulary_graph() do
+    [NS.BFO.__file__(), NS.IAO.__file__(), NS.RO.__file__()]
+    |> Enum.map(&RDF.read_file!(&1))
+    |> Enum.reduce(RDF.Graph.new(), &RDF.Graph.add/2)
   end
 
   defmodule Mint do

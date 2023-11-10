@@ -19,11 +19,38 @@ defmodule ToobaWeb.CoreComponents do
   alias Phoenix.LiveView.JS
   import ToobaWeb.Gettext
 
-  def render_iri(iri) when is_struct(iri, RDF.IRI) do
-    RDF.IRI.to_string(iri)
+  def render_rdf(%{resource: %RDF.IRI{} = iri} = assigns) do
+    ~H"""
+    <span class="text-zinc-900">
+      <%= RDF.IRI.to_string(@resource) %>
+    </span>
+    """
   end
 
-  def render_iri(value), do: value
+  def render_rdf(%{resource: %RDF.Literal{} = resource}) do
+    value = RDF.Literal.value(resource)
+    render_literal(%{type: resource.literal, value: value, literal: resource})
+  end
+
+  def render_rdf(%{resource: %RDF.BlankNode{} = resource}) do
+    render_blank_node(%{value: resource.value, blank_node: resource})
+  end
+
+  def render_literal(assigns) do
+    ~H"""
+    <span class="text-zinc-900">
+      <%= @value %>
+    </span>
+    """
+  end
+
+  def render_blank_node(assigns) do
+    ~H"""
+    <span class="text-zinc-900">
+      <%= @value %>
+    </span>
+    """
+  end
 
   @doc """
   Renders a modal.
