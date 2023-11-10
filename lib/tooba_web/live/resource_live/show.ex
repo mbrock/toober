@@ -18,4 +18,13 @@ defmodule ToobaWeb.ResourceLive.Show do
 
   defp page_title(:show), do: "Show Resource"
   defp page_title(:edit), do: "Edit Resource"
+  @impl true
+  def render(assigns) do
+    ~L"""
+    <div>
+      <h1><%= @page_title %></h1>
+      <p><%= @description %></p>
+    </div>
+    """
+  end
 end
