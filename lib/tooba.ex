@@ -1,9 +1,8 @@
-defmodule EdgeToTree do
-  def edges_to_tree(edges) do
+defmodule Tooba.Graph do
+  def forest_from_edges(edges) do
     edges
     |> Enum.reduce(%{}, &accumulate_edges/2)
     |> build_forest()
-    |> hide_bnodes()
   end
 
   defp accumulate_edges({child, parent}, acc) do
@@ -28,8 +27,42 @@ defmodule EdgeToTree do
     {node, Enum.map(children, &build_subtree(&1, map))}
   end
 
-  defp hide_bnodes(forest) do
-    forest
+  def hide_bnodes(forest) do
+    Enum.flat_map(forest, fn {node, children} ->
+      case node do
+        %RDF.BlankNode{} -> children
+        _ -> [{node, hide_bnodes(children)}]
+      end
+    end)
+  end
+
+  use RDF
+  alias Tooba.NS.{BFO, IAO, RO, OWL}
+
+  def vocabulary_graph() do
+    [BFO.__file__(), IAO.__file__(), RO.__file__(), OWL.__file__()]
+    |> Enum.map(&RDF.read_file!(&1))
+    |> Enum.reduce(RDF.Graph.new(), &RDF.Graph.add/2)
+  end
+
+  def subclass_relations(graph) do
+    graph
+    |> RDF.Graph.query([{:s?, RDF.NS.RDFS.subClassOf(), :o?}])
+    |> Enum.map(fn %{s: s, o: o} -> {s, o} end)
+  end
+
+  def subclass_tree(graph) do
+    graph
+    |> subclass_relations()
+    |> forest_from_edges()
+    |> hide_bnodes()
+  end
+
+  def label_map(graph) do
+    graph
+    |> RDF.Graph.query([{:s?, RDF.NS.RDFS.label(), :o?}])
+    |> Enum.map(fn %{s: s, o: o} -> {s, o} end)
+    |> Enum.reduce(%{}, fn {s, o}, acc -> Map.put(acc, s, o) end)
   end
 end
 
@@ -62,6 +95,11 @@ defmodule Tooba do
 
   defmodule NS do
     use RDF.Vocabulary.Namespace
+
+    defvocab(OWL,
+      base_iri: "http://www.w3.org/2002/07/owl#",
+      file: "owl.ttl"
+    )
 
     defvocab(RO,
       base_iri: "http://www.obofoundry.org/obo/",
@@ -106,18 +144,6 @@ defmodule Tooba do
 
   def resource(iri) do
     graph() |> RDF.Data.description(iri)
-  end
-
-  def vocabulary_graph() do
-    [NS.BFO.__file__(), NS.IAO.__file__(), NS.RO.__file__()]
-    |> Enum.map(&RDF.read_file!(&1))
-    |> Enum.reduce(RDF.Graph.new(), &RDF.Graph.add/2)
-  end
-
-  def rdf_subclass_relations(graph) do
-    graph
-    |> RDF.Graph.query([{:s?, RDF.NS.RDFS.subClassOf(), :o?}])
-    |> Enum.map(fn %{s: s, o: o} -> {s, o} end)
   end
 
   defmodule Mint do
