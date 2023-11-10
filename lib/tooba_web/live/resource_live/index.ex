@@ -9,7 +9,11 @@ defmodule ToobaWeb.ResourceLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     descriptions = Tooba.graph() |> RDF.Data.descriptions()
-    {:ok, stream(socket, :descriptions, descriptions, dom_id: &dom_id/1)}
+
+    {:ok,
+     socket
+     |> stream_configure(:descriptions, dom_id: &dom_id/1)
+     |> stream(:descriptions, descriptions)}
   end
 
   defp dom_id(description) do
@@ -21,8 +25,8 @@ defmodule ToobaWeb.ResourceLive.Index do
     # Let's render a definition list for each subject.
     ~H"""
     <div>
-      <%= for description <- @descriptions do %>
-        <article>
+      <%= for {dom_id, description} <- @streams.descriptions do %>
+        <article id={dom_id}>
           <table>
             <thead>
               <tr>
