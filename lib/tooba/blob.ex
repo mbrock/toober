@@ -20,12 +20,19 @@ defmodule Tooba.Blob.Store do
     :filename.basedir(:user_data, Application.get_application(:tooba) |> Atom.to_string())
   end
 
-  # Saves a blob to the file system.
-  def save_blob(file_name, data) do
+  # Saves a blob to the file system with a file name based on the content hash.
+  def save_blob(data) do
     ensure_data_dir_exists()
+    file_name = generate_content_hash(data)
     file_path = blob_store_file_path(file_name)
 
     File.write(file_path, data)
+  end
+
+  # Generates a SHA256 hash of the given data.
+  defp generate_content_hash(data) do
+    :crypto.hash(:sha256, data)
+    |> Base.encode16(case: :lower)
   end
 
   # Retrieves a blob from the file system.
