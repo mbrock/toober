@@ -37,10 +37,10 @@ defmodule Tooba.Graph do
   end
 
   use RDF
-  alias Tooba.NS.{BFO, IAO, RO, OWL}
+  alias Tooba.NS.{BFO, IAO, RO, OWL, K}
 
   def vocabulary_graph() do
-    [BFO.__file__(), IAO.__file__(), RO.__file__(), OWL.__file__()]
+    [BFO.__file__(), IAO.__file__(), RO.__file__(), OWL.__file__(), K.__file__()]
     |> Enum.map(&RDF.read_file!(&1))
     |> Enum.reduce(RDF.Graph.new(), &RDF.Graph.add/2)
   end
@@ -118,6 +118,12 @@ defmodule Tooba do
       base_iri: "http://purl.obolibrary.org/obo/",
       file: "bfo.owl.rdf",
       ignore: ~w[iao.owl bfo.owl],
+      terms: {Tooba.Term, :term_handler}
+    )
+
+    defvocab(K,
+      base_iri: "http://node.town/",
+      file: "kosmos.ttl",
       terms: {Tooba.Term, :term_handler}
     )
   end

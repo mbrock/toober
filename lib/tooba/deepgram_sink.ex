@@ -14,7 +14,8 @@ defmodule Tooba.DeepgramSink do
   def_options(
     deepgram_opts: [
       spec: any()
-    ]
+    ],
+    session: [spec: any()]
   )
 
   alias Tooba.Deepgram
