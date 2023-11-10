@@ -19,6 +19,12 @@ defmodule ToobaWeb.CoreComponents do
   alias Phoenix.LiveView.JS
   import ToobaWeb.Gettext
 
+  def render_iri(iri) when is_struct(iri, RDF.IRI) do
+    RDF.IRI.to_string(iri)
+  end
+
+  def render_iri(value), do: value
+
   @doc """
   Renders a modal.
 

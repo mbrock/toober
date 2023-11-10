@@ -26,8 +26,8 @@ defmodule ToobaWeb.Router do
     live "/messages/:id", MessageLive.Show, :show
     live "/messages/:id/show/edit", MessageLive.Show, :edit
 
-    # View an RDF Linked Data resource by IRI.
-    live "/resource/:iri", ResourceLive.Show, :show
+    live "/resources/:iri", ResourceLive.Show, :show
+    live "/resources", ResourceLive.Index, :index
   end
 
   # Other scopes may use custom stacks.

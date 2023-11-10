@@ -17,13 +17,13 @@ defmodule ToobaWeb.ResourceLive.Index do
   end
 
   defp dom_id(description) do
-    RDF.IRI.to_string(description.subject) |> :erlang.phash2() |> Integer.to_string()
+    RDF.IRI.to_string(description.subject)
   end
 
-  defp render_iri(iri) when is_struct(iri, RDF.IRI) do
-    RDF.IRI.to_string(iri)
+  defp triples_as_spo_maps(description) do
+    RDF.Description.triples(description)
+    |> Enum.map(fn {s, p, o} -> %{subject: s, predicate: p, object: o} end)
   end
-  defp render_iri(value), do: value
 
   @impl true
   def render(assigns) do
@@ -31,26 +31,10 @@ defmodule ToobaWeb.ResourceLive.Index do
     ~H"""
     <div>
       <%= for {dom_id, description} <- @streams.descriptions do %>
-        <article id={dom_id}>
-          <table>
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>Predicate</th>
-                <th>Object</th>
-              </tr>
-            </thead>
-            <tbody>
-              <%= for {subject, predicate, object} <- RDF.Description.triples(description) do %>
-                <tr>
-                  <td><%= render_iri(subject) %></td>
-                  <td><%= render_iri(predicate) %></td>
-                  <td><%= render_iri(object) %></td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </article>
+        <ToobaWeb.ResourceLive.CardComponent.description
+          title={dom_id}
+          triples={triples_as_spo_maps(description)}
+        />
       <% end %>
     </div>
     """
