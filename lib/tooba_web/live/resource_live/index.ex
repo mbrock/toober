@@ -20,6 +20,11 @@ defmodule ToobaWeb.ResourceLive.Index do
     RDF.IRI.to_string(description.subject) |> :erlang.phash2() |> Integer.to_string()
   end
 
+  defp render_iri(iri) when is_struct(iri, RDF.IRI) do
+    RDF.IRI.to_string(iri)
+  end
+  defp render_iri(value), do: value
+
   @impl true
   def render(assigns) do
     # Let's render a definition list for each subject.
@@ -38,9 +43,9 @@ defmodule ToobaWeb.ResourceLive.Index do
             <tbody>
               <%= for {subject, predicate, object} <- RDF.Description.triples(description) do %>
                 <tr>
-                  <td><%= subject %></td>
-                  <td><%= predicate %></td>
-                  <td><%= object %></td>
+                  <td><%= render_iri(subject) %></td>
+                  <td><%= render_iri(predicate) %></td>
+                  <td><%= render_iri(object) %></td>
                 </tr>
               <% end %>
             </tbody>
