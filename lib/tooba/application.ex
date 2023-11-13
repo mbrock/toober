@@ -1,3 +1,24 @@
+defmodule Tooba.Session.Task do
+  use Task, restart: :transient
+
+  use RDF
+  alias Tooba.NS.{BFO, K}
+
+  def start_link(_) do
+    Task.start_link(__MODULE__, :run, [])
+  end
+
+  def run() do
+    session = Tooba.session()
+    computer = Tooba.computer()
+
+    Tooba.know!([
+      {session, RDF.type(), K.ProgramExecution},
+      {session, BFO.hasParticipant(), computer}
+    ])
+  end
+end
+
 defmodule Tooba.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
@@ -10,6 +31,7 @@ defmodule Tooba.Application do
     children =
       [
         Tooba.RDF.Store,
+        Tooba.Session.Task,
         ToobaWeb.Telemetry,
         Tooba.Repo,
         {DNSCluster, query: Application.get_env(:tooba, :dns_cluster_query) || :ignore},

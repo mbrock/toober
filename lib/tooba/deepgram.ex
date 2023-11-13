@@ -86,16 +86,15 @@ defmodule Tooba.Deepgram do
   # Nested module for streaming transcription
   defmodule Streaming do
     use WebSockex
+    use RDF
 
-    def start_link(opts \\ %{}) do
+    def start_link(%{session: session, deepgram_opts: opts}) do
       headers = Tooba.Deepgram.authorization_headers()
       params = Tooba.Deepgram.build_query_params(opts) |> URI.encode_query()
 
       url = "wss://api.deepgram.com/v1/listen?" <> params
       IO.inspect(params, label: "Params")
       IO.inspect(headers, label: "Headers")
-
-      session = Tooba.gensym()
 
       WebSockex.start_link(url, __MODULE__, %{session: session}, extra_headers: headers)
     end
@@ -106,10 +105,25 @@ defmodule Tooba.Deepgram do
          %{
            "type" => "Results",
            "channel" => %{"alternatives" => alternatives},
-           "metadata" => %{"request_id" => _request_id}
-         }} ->
-          transcript = Enum.map(alternatives, fn alt -> alt["transcript"] end)
-          IO.puts("Transcript: #{Enum.join(transcript, " ")}")
+           "metadata" => %{"request_id" => _request_id},
+           "is_final" => is_final
+         } = result} ->
+          case Enum.map(alternatives, fn alt -> alt["transcript"] end) do
+            [""] ->
+              nil
+
+            transcripts ->
+              entity = Tooba.gensym()
+
+              Tooba.know!([
+                {entity, RDF.type(), ~I<https://node.town/TranscriptionResult>},
+                {entity, ~I<https://node.town/transcription>, transcripts},
+                {entity, ~I<https://node.town/timestamp>, DateTime.utc_now()},
+                {entity, ~I<https://node.town/json>, Jason.encode!(result)},
+                {entity, ~I<https://node.town/session>, state[:session]},
+                {entity, ~I<https://node.town/isFinal>, is_final}
+              ])
+          end
 
         {:error, _} ->
           IO.puts("Error parsing JSON message")

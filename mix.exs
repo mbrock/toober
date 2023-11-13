@@ -32,6 +32,7 @@ defmodule Tooba.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:recase, "~> 0.7.0"},
       {:membrane_core, "~> 0.12.3"},
       {:membrane_opus_plugin, "~> 0.18.0"},
       {:membrane_matroska_plugin, "~> 0.4.0"},

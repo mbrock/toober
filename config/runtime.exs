@@ -7,6 +7,10 @@ config :tooba,
 config :tooba,
   zigbee_enabled: System.get_env("TOOBA_ZIGBEE") == "yes"
 
+config :tooba,
+  system_info: Tooba.Computer.system_info!(),
+  system_session: Tooba.gensym()
+
 # The block below contains prod specific runtime configuration.
 
 # ## Using releases

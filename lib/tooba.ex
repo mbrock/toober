@@ -67,6 +67,14 @@ defmodule Tooba.Graph do
 end
 
 defmodule Tooba do
+  def session do
+    Application.get_env(:tooba, :system_session)
+  end
+
+  def computer do
+    Tooba.Computer.unique_iri()
+  end
+
   defmodule Term do
     require Logger
 
@@ -79,11 +87,11 @@ defmodule Tooba do
     end
 
     def term_handler(:resource, term) do
-      {:ok, term}
+      {:ok, Recase.to_pascal(term)}
     end
 
     def term_handler(:property, term) do
-      {:ok, String.downcase(term)}
+      {:ok, Recase.to_snake(term)}
     end
 
     def term_handler(nil, "RO_" <> term) do
@@ -115,14 +123,23 @@ defmodule Tooba do
     )
 
     defvocab(BFO,
-      base_iri: "http://purl.obolibrary.org/obo/",
-      file: "bfo.owl.rdf",
-      ignore: ~w[iao.owl bfo.owl],
-      terms: {Tooba.Term, :term_handler}
+      base_iri: "http://purl.obolibrary.org/obo/BFO_",
+      file: "bfo2.owl.rdf",
+      terms: [
+        Entity: "0000001",
+        Continuant: "0000002",
+        Occurrent: "0000003",
+        Object: "0000030",
+        Process: "0000015",
+        IndependentContinuant: "0000004",
+        GenericallyDependentContinuant: "0000031",
+        SpecificallyDependentContinuant: "0000020",
+        hasParticipant: "0000057"
+      ]
     )
 
     defvocab(K,
-      base_iri: "http://node.town/",
+      base_iri: "https://node.town/",
       file: "kosmos.ttl",
       terms: {Tooba.Term, :term_handler}
     )

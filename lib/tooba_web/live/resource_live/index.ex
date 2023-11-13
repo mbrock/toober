@@ -11,7 +11,7 @@ defmodule ToobaWeb.ResourceLive.Index do
   def mount(_params, _session, socket) do
     vocab = Tooba.Graph.vocabulary_graph()
 
-    descriptions = vocab |> RDF.Data.descriptions() |> exclude_bnodes()
+    descriptions = Tooba.graph() |> RDF.Data.descriptions() |> exclude_bnodes()
 
     taxonomy =
       vocab
@@ -59,9 +59,6 @@ defmodule ToobaWeb.ResourceLive.Index do
     ~H"""
     <div>
       <div>
-        <%= render_taxonomy_forest(assigns) %>
-      </div>
-      <div>
         <%= for {dom_id, description} <- @streams.descriptions do %>
           <ToobaWeb.ResourceLive.CardComponent.description
             title={dom_id}
@@ -70,6 +67,9 @@ defmodule ToobaWeb.ResourceLive.Index do
             triples={triples_as_spo_maps(description)}
           />
         <% end %>
+      </div>
+      <div>
+        <%= render_taxonomy_forest(assigns) %>
       </div>
     </div>
     """

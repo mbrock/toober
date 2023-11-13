@@ -4,7 +4,7 @@
 defmodule Tooba.Record do
   use Membrane.Pipeline
   use RDF
-  alias Tooba.NS.K
+  alias Tooba.NS.BFO
 
   @impl true
   def handle_init(_ctx, %{session: session, deepgram_opts: deepgram_opts}) do
@@ -17,6 +17,14 @@ defmodule Tooba.Record do
         %{sample_rate: sample_rate, channels: channels, encoding: "linear16"}
       )
 
+    subsession = Tooba.gensym()
+
+    Tooba.know!([
+      {subsession, RDF.NS.RDF.type(), ~I<https://node.town/TranscriptionProcess>},
+      {session, ~I<https://node.town/supervises>, subsession},
+      {subsession, ~I<https://node.town/began>, DateTime.utc_now()}
+    ])
+
     spec =
       child(%Membrane.PortAudio.Source{
         endpoint_id: :default,
@@ -24,27 +32,22 @@ defmodule Tooba.Record do
         channels: channels,
         sample_format: :s16le
       })
-      |> child(%Tooba.DeepgramSink{session: session, deepgram_opts: deepgram_opts})
-
-    Tooba.know!({session, RDF.type(), K.RecordingSession})
+      |> child(%Tooba.DeepgramSink{session: subsession, deepgram_opts: deepgram_opts})
 
     {[spec: spec], %{}}
   end
 
-  # Demo function to start and stop the pipeline after 5 seconds
   def demo do
-    recording_session = Tooba.gensym()
-
-    # Start the pipeline
     {:ok, _supervisor_pid, pid} =
       Tooba.Record.start_link(%{
-        session: recording_session
+        session: Tooba.session(),
+        deepgram_opts: %{
+          interim_results: true,
+          smart_format: true
+        }
       })
 
-    # Wait for 10 seconds
-    :timer.sleep(10_000)
-
-    # Stop the pipeline
+    :timer.sleep(30_000)
     :ok = Membrane.Pipeline.terminate(pid)
   end
 end

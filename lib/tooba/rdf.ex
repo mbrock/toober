@@ -3,6 +3,7 @@ defmodule Tooba.RDF.Store do
   A persistent RDF graph store.
   """
   require RDF.Graph
+  require Logger
 
   use GenServer
 
@@ -23,9 +24,29 @@ defmodule Tooba.RDF.Store do
 
   @impl true
   def handle_call({:know, data}, _from, graph) do
-    append_to_log(data)
-    new_graph = RDF.Graph.add(data, graph)
-    {:reply, :ok, new_graph}
+    news =
+      data
+      |> RDF.Graph.new()
+      |> RDF.Data.statements()
+      |> Enum.filter(fn fact ->
+        not RDF.Data.include?(graph, fact)
+      end)
+
+    new_graph = RDF.Graph.add(graph, news)
+
+    unless Enum.empty?(news) do
+      Logger.info("New facts: #{inspect(news)}")
+
+      Phoenix.PubSub.broadcast(
+        Tooba.PubSub,
+        "news",
+        %{news: news, graph: new_graph}
+      )
+    end
+
+    with :ok <- append_to_log(news) do
+      {:reply, :ok, new_graph}
+    end
   end
 
   @impl true
