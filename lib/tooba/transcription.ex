@@ -16,7 +16,14 @@ defmodule Tooba.Transcription.Sink do
   @impl true
   def handle_init(_ctx, %{session: session}) do
     {:ok, ws_pid} =
-      Tooba.Deepgram.Streaming.start_link(%{session: session})
+      Tooba.Deepgram.Streaming.start_link(%{
+        session: session,
+        deepgram_opts: %{
+          sample_rate: 48_000,
+          channels: 1,
+          encoding: "linear16"
+        }
+      })
 
     {[], %{ws_pid: ws_pid, session: session}}
   end
