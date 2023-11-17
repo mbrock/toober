@@ -32,11 +32,21 @@ defmodule Tooba.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      # meeseeks: query HTML and XML documents
+      {:meeseeks, "~> 0.17.0"},
+      # libgraph: graph data structure and algorithms
+      {:libgraph, "~> 0.16"},
+      # recase: string case conversion
       {:recase, "~> 0.7.0"},
+      # membrane_core: streaming data processing
       {:membrane_core, "~> 0.12.3"},
+      # membrane_opus_plugin: Opus codec for voice streaming
       {:membrane_opus_plugin, "~> 0.18.0"},
+      # membrane_matroska_plugin: Matroska container
       {:membrane_matroska_plugin, "~> 0.4.0"},
+      # membrane_portaudio_plugin: PortAudio binding for recording audio
       {:membrane_portaudio_plugin, "~> 0.17.3"},
+      # websockex: WebSocket client
       {:websockex, "~> 0.4.3"},
       # tesla: HTTP client with middleware
       {:tesla, "~> 1.8.0"},

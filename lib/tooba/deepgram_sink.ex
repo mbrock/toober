@@ -21,15 +21,26 @@ defmodule Tooba.DeepgramSink do
   alias Tooba.Deepgram
 
   @impl true
-  def handle_init(_ctx, %{session: session, deepgram_opts: deepgram_opts}) do
+  def handle_init(_ctx, %{
+        session: session,
+        deepgram_opts: deepgram_opts
+      }) do
     {:ok, ws_pid} =
-      Deepgram.Streaming.start_link(%{session: session, deepgram_opts: deepgram_opts})
+      Deepgram.Streaming.start_link(%{
+        session: session,
+        deepgram_opts: deepgram_opts
+      })
 
     {[], %{ws_pid: ws_pid, session: session}}
   end
 
   @impl true
-  def handle_write(:input, buffer, _ctx, %{ws_pid: ws_pid} = state) do
+  def handle_write(
+        :input,
+        buffer,
+        _ctx,
+        %{ws_pid: ws_pid} = state
+      ) do
     WebSockex.send_frame(ws_pid, {:binary, buffer.payload})
     {[], state}
   end

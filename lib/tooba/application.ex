@@ -30,13 +30,13 @@ defmodule Tooba.Application do
   def start(_type, _args) do
     children =
       [
-        Tooba.RDF.Store,
-        Tooba.Session.Task,
         ToobaWeb.Telemetry,
         Tooba.Repo,
         {DNSCluster, query: Application.get_env(:tooba, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: Tooba.PubSub},
         {Finch, name: Tooba.Finch},
+        Tooba.RDF.Store,
+        Tooba.Session.Task,
         ToobaWeb.Endpoint
       ] ++
         for zigbee_enabled <- [Application.get_env(:tooba, :zigbee_enabled, true)],

@@ -4,7 +4,6 @@
 defmodule Tooba.Record do
   use Membrane.Pipeline
   use RDF
-  alias Tooba.NS.BFO
 
   @impl true
   def handle_init(_ctx, %{session: session, deepgram_opts: deepgram_opts}) do
@@ -42,12 +41,12 @@ defmodule Tooba.Record do
       Tooba.Record.start_link(%{
         session: Tooba.session(),
         deepgram_opts: %{
+          model: "base",
           interim_results: true,
           smart_format: true
         }
       })
 
-    :timer.sleep(30_000)
-    :ok = Membrane.Pipeline.terminate(pid)
+    {:ok, pid}
   end
 end

@@ -14,22 +14,13 @@ defmodule Tooba.Deepgram do
       field :encoding, :string
       field :sample_rate, :integer
       field :channels, :integer
-      field :model, :string, default: "general"
-      field :tier, :string, default: "base"
-      field :version, :string, default: "latest"
+      field :model, :string, default: "nova-2"
       field :language, :string, default: "en"
-      field :punctuate, :boolean
-      field :paragraphs, :boolean
-      field :profanity_filter, :boolean, default: false
-      field :diarize, :boolean
-      field :diarize_version, :string
       field :smart_format, :boolean
-      field :filler_words, :boolean
       field :multichannel, :boolean, default: false
-      field :alternatives, :integer, default: 1
-      field :numerals, :boolean
       field :interim_results, :boolean
       field :tag, :string
+      field :utterances, :boolean, default: false
     end
 
     # Functions for processing request parameters
@@ -45,21 +36,12 @@ defmodule Tooba.Deepgram do
         :sample_rate,
         :channels,
         :model,
-        :tier,
-        :version,
         :language,
-        :punctuate,
-        :paragraphs,
-        :profanity_filter,
-        :diarize,
-        :diarize_version,
         :smart_format,
-        :filler_words,
         :multichannel,
-        :alternatives,
         :tag,
-        :numerals,
-        :interim_results
+        :interim_results,
+        :utterances
       ]
     end
 
@@ -88,6 +70,8 @@ defmodule Tooba.Deepgram do
     use WebSockex
     use RDF
 
+    require Logger
+
     def start_link(%{session: session, deepgram_opts: opts}) do
       headers = Tooba.Deepgram.authorization_headers()
       params = Tooba.Deepgram.build_query_params(opts) |> URI.encode_query()
@@ -96,7 +80,14 @@ defmodule Tooba.Deepgram do
       IO.inspect(params, label: "Params")
       IO.inspect(headers, label: "Headers")
 
-      WebSockex.start_link(url, __MODULE__, %{session: session}, extra_headers: headers)
+      case WebSockex.start_link(url, __MODULE__, %{session: session}, extra_headers: headers) do
+        {:ok, pid} ->
+          {:ok, pid}
+
+        {:error, reason} ->
+          Logger.error("Error starting WebSockex: #{inspect(reason)}")
+          {:error, reason}
+      end
     end
 
     def handle_frame({:text, msg}, state) do
@@ -130,6 +121,16 @@ defmodule Tooba.Deepgram do
       end
 
       {:ok, state}
+    end
+
+    def handle_frame({:binary, _msg}, state) do
+      IO.puts("Received binary message")
+      {:ok, state}
+    end
+
+    def terminate(reason, _state) do
+      IO.inspect(reason, label: "Terminating")
+      :ok
     end
 
     def handle_disconnect(connection_status_map, state) do
