@@ -6,10 +6,8 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :tooba, Tooba.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "tooba_test#{System.get_env("MIX_TEST_PARTITION")}",
+  adapter: Ecto.Adapters.SQLite3,
+  database: "tooba_test#{System.get_env("MIX_TEST_PARTITION")}.sqlite3",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 

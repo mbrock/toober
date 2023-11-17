@@ -1,13 +1,9 @@
 import Config
 
-# Configure your database
+# Configure your database to use SQLite for simplicity
 config :tooba, Tooba.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "tooba_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
+  adapter: Ecto.Adapters.SQLite3,
+  database: "tooba_dev.sqlite3",
   pool_size: 10
 
 # For development, we disable any cache and enable
